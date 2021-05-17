@@ -637,7 +637,9 @@ public class DataProcessing {
         nefc = new int[newFormalContext.length][newFormalContext[0].length];
 
         //Generate a random array.
-        random = simpleTools.generateRandomArray(paraFc.length);
+        System.out.println("paraFc.length: " + paraFc.length);
+        SimpleTools sim = new SimpleTools();
+        random = sim.generateRandomArray(paraFc.length);
         //orFormalContext
         random1 = new int[orFormalContext.length];
         for (int i = 0; i < orFormalContext.length; i++) {
