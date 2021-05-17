@@ -21,6 +21,7 @@ import datamodel.DataProcessing.*;
  *
  */
 public class RatingMatrix {
+    
     /**
      * The sampling formal context.
      */
