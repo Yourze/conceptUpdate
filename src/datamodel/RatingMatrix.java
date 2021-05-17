@@ -101,7 +101,7 @@ public class RatingMatrix {
      **************
      * The second constructor
      *
-     * @param paraFilename
+     * @param paraRatingMatrixFilename
      *            The arff filename.
      **************
      */
@@ -343,7 +343,7 @@ public class RatingMatrix {
      **************
      * The third constructor
      *
-     * @param paraFilename
+     * @param paraMatrix
      *            The arff filename.
      **************
      */
@@ -367,7 +367,7 @@ public class RatingMatrix {
      **************
      * The third constructor
      *
-     * @param paraFilename
+     * @param paraMatrix
      *            The arff filename.
      **************
      */
@@ -530,7 +530,6 @@ public class RatingMatrix {
      * Compute representative oriented concept.
      * @param paraRepresentative The representative user.
      * @param paraItemsThreshold The threshold for common items.
-     * @param paraUsersThreshold The threshold for common users.
      **************
      */
     Concept computeRepresentativeOrientedConcept(int paraRepresentative, int paraItemsThreshold) {
@@ -655,8 +654,6 @@ public class RatingMatrix {
      *            The representative user.
      * @param paraItemsThreshold
      *            The threshold for common items.
-     * @param paraUsersThreshold
-     *            The threshold for common users.
      **************
      */
     Concept computeRepresentativeOrientedConcept(int paraRepresentative, int paraItemsThreshold, int[] paraRandom,
@@ -864,7 +861,7 @@ public class RatingMatrix {
 
     /**
      * get users
-     * @param paraUserSet
+     * @param paraConcpet
      * @param paraAvailable
      * @return
      */
@@ -1009,7 +1006,7 @@ public class RatingMatrix {
      **************
      * Which items have been rated by the given user set.
      * @param paraUserSet The given user set.
-     * @param paraAvailable Is the respective item available.
+     * @param paraUserAvailable Is the respective item available.
      **************
      */
     int[] getSuperItems(int[] paraUserSet,boolean[] paraUserAvailable) {
@@ -1064,7 +1061,7 @@ public class RatingMatrix {
      **************
      * Which items have been rated by the given user set.
      * @param paraUserSet The given user set.
-     * @param paraAvailable Is the respective item available.
+     * @param paraUserAvailable Is the respective item available.
      **************
      */
     int[] getSuperItems(int[] paraUserSet,boolean[] paraUserAvailable, boolean[][] paraFormalContext) {
@@ -1119,7 +1116,6 @@ public class RatingMatrix {
      **************
      * Which users have rated the given item set.
      * @param paraItemSet The given item set.
-     * @param paraAvailable Is the respective item available.
      **************
      */
     int[] getUsers(int[] paraItemSet) {
@@ -1155,7 +1151,6 @@ public class RatingMatrix {
      **************
      * Which users have rated the given item set.
      * @param paraItemSet The given item set.
-     * @param paraAvailable Is the respective item available.
      **************
      */
     int[] getSuperUsers(int[] paraItemSet) {
@@ -1191,7 +1186,6 @@ public class RatingMatrix {
      **************
      * Which items have been rated by the given user set.
      * @param paraUserSet The given user set.
-     * @param paraAvailable Is the respective item available.
      **************
      */
     int[] getSuperItems(int[] paraUserSet) {
@@ -1227,7 +1221,6 @@ public class RatingMatrix {
      **************
      * Which items have been rated by the given user set.
      * @param paraUserSet The given user set.
-     * @param paraAvailable Is the respective item available.
      **************
      */
     int[] getSuperItems(int[] paraUserSet, boolean[][] paraFormalContext) {
@@ -1416,7 +1409,6 @@ public class RatingMatrix {
      * Recommend to the given user with the given concept.
      * @param paraUser The given user.
      * @param paraConcept The given concept.
-     * @param paraThreshold The threshold for recommendation.
      **************
      */
     public double[] conceptsBasedRatingRecommendation(int paraUser, Concept paraConcept) {
@@ -1469,8 +1461,6 @@ public class RatingMatrix {
      **************
      * Recommend to the given user with the given user group.
      * @param paraUser The given user.
-     * @param paraConcept The given concept.
-     * @param paraThreshold The threshold for recommendation.
      **************
      */
     public double[] groupBasedRatingRecommendation(int paraUser, int[] paraUserGroup) {

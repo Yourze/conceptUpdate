@@ -1415,11 +1415,43 @@ public class ConceptSet {
 
         int orConcept = tempActualConceptsForUC;
         tempActualOrConcepts = orConcept;
+        double[] distanceWithConcepts = new double[orConcept];
         for (int i = 0; i < nefc.length; i++) {
             for (int j = 0; j < orConcept; j++) {
-//                double tempDistance =
+                double tempDistanceSum = 0;
+                int count = 0;
+                for (int k = 0; k < conceptsArray[j].users.length; k++) {
+                    Measures measures = new Measures(nefc[i], ratingMatrix.ratingMatrix[conceptsArray[j].users[k]]);
+                    tempDistanceSum += measures.manhattanSimilarity();
+                }//of for k
+                double tempDistance = tempDistanceSum / (conceptsArray[j].users.length - 1);
+                distanceWithConcepts[count] = tempDistance;
+            }//of for j
+            //Find the top-k distance in distanceWithConcepts.
+            double[] tempSort = distanceWithConcepts;
+            Arrays.sort(tempSort);
+            int[] topK = new int[3];
+            for (int j = 0; j < distanceWithConcepts.length; j++) {
+                if (distanceWithConcepts[j] == tempSort[0]) {
+                    topK[0] = j;
+                }//of if
+                if (distanceWithConcepts[j] == tempSort[1]) {
+                    topK[1] = j;
+                }//of if
+                if (distanceWithConcepts[j] == tempSort[2]) {
+                    topK[2] = j;
+                }//of if
+            }//of for i
+            //Insert current user in concepts.
+            for (int j = 0; j < topK.length; j++) {
+                int[] tempUserSet = new int[conceptsArray[topK[i]].users.length + 1];
+                for (int k = 0; k < conceptsArray[topK[i]].users.length; k++) {
+                    tempUserSet[k] = conceptsArray[topK[i]].users[i];
+                }//of for k
+                tempUserSet[conceptsArray[topK[i]].users.length] = ran2[i];
             }//of for j
         }//of for i
+
         generateConceptSet(2, 9, nefc, ran2);
 
         long startTime2 = System.currentTimeMillis();
@@ -1767,6 +1799,15 @@ public class ConceptSet {
     }// of test7
 
     /**
+     * Test8
+     */
+    public static void test8() {
+        String tempFormalContextURL = "src/data/created.txt";
+        RatingMatrix tempTestFormalContext = new RatingMatrix(6, 5, tempFormalContextURL);
+        ConceptSet tempSet = new ConceptSet(tempTestFormalContext);
+        tempSet.updateByIncreaseUserKNN();
+    }//of for test8
+    /**
      **************
      * Test the class.
      *
@@ -1780,6 +1821,7 @@ public class ConceptSet {
 //		trainAndTest4();
 //		test5();
 //		test6();
-        test7();
+//        test7();
+        test8();
     }// Of main
 }// Of ConceptSet

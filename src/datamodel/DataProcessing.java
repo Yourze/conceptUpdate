@@ -620,8 +620,8 @@ public class DataProcessing {
      */
     public void divideTwoFC () {
         //paraFC is the original formal context.
-        int[][] paraFc = readFCFromArffFile("src/data/training.arff", 943, 1682);
-//		int[][] paraFc = readFCFromArrayFile("src/data/created.txt", 6, 5);
+//        int[][] paraFc = readFCFromArffFile("src/data/training.arff", 943, 1682);
+		int[][] paraFc = readFCFromArrayFile("src/data/created.txt", 6, 5);
 //		RatingMatrix tempTrainRatingMatrix = new RatingMatrix("src/data/training.arff", 943, 1682);
 //		System.out.println("*********");
 //		for (int i = 0; i < paraFc.length; i++) {

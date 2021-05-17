@@ -155,24 +155,30 @@ public class Measures {
         int tempFirstBase = 0;
         int tempSecondBase = 0;
         for (int i = 0; i < firstRatingVector.length; i++) {
-            tempFirstBase += firstRatingVector[i] * firstRatingVector[i];
-            tempSecondBase += secondRatingVector[i] * secondRatingVector[i];
+            tempFirstBase += Math.abs(firstRatingVector[i] - firstRatingVector[i]);
+            tempSecondBase += Math.abs(secondRatingVector[i] - secondRatingVector[i]);
         } // End for i
-
-        double tempSqrtFirstBase = Math.sqrt(tempFirstBase);
-        double tempSqrtSecondBase = Math.sqrt(tempSecondBase);
-
-        // The Euclid distance between two vectors.
-        int tempDifference = 0;
-
-        for (int i = 0; i < firstRatingVector.length; i++) {
-            tempDifference += (firstRatingVector[i] - secondRatingVector[i])
-                    * (firstRatingVector[i] - secondRatingVector[i]);
-        } // End for i
-        double tempSqrtDifference = Math.sqrt(tempDifference);
-        double tempTriangleSim = 1.0 - tempSqrtDifference / (tempSqrtFirstBase + tempSqrtSecondBase);
-        return tempTriangleSim;
+        double tempManhattanSim = tempFirstBase + tempSecondBase;
+        return tempManhattanSim;
     }// End function triangleSimilarity
+
+    /**************************************
+     * Compute the Euclidean similarity of two rating vector.
+     *
+     * @return
+     **************************************
+     */
+    double euclideanSimilarity() {
+        // The bases of two rating vectors.
+        int tempFirstBase = 0;
+        int tempSecondBase = 0;
+        for (int i = 0; i < firstRatingVector.length; i++) {
+            tempFirstBase += Math.abs(firstRatingVector[i] - firstRatingVector[i]) * Math.abs(firstRatingVector[i] - firstRatingVector[i]);
+            tempSecondBase += Math.abs(secondRatingVector[i] - secondRatingVector[i]) * Math.abs(secondRatingVector[i] - secondRatingVector[i]);
+        } // End for i
+        double tempEuclideanSim = Math.sqrt(tempFirstBase + tempSecondBase);
+        return tempEuclideanSim;
+    }// End function euclideanSimilarity
 
     /**************************************
      * Compute the integrated similarity of two rating vector with Triangle and
