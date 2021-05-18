@@ -615,66 +615,52 @@ public class DataProcessing {
         }// Of for i
         return formalContext;
     }
+
     /**
      * Divide formal context to two formal context
      */
-    public void divideTwoFC () {
+    public void divideTwoFC() {
         //paraFC is the original formal context.
-//        int[][] paraFc = readFCFromArffFile("src/data/training.arff", 943, 1682);
-		int[][] paraFc = readFCFromArrayFile("src/data/created.txt", 6, 5);
+        int[][] paraFc = readFCFromArffFile("src/data/training.arff", 943, 1682);
+//        int[][] paraFc = readFCFromArrayFile("src/data/created.txt", 6, 5);
 //		RatingMatrix tempTrainRatingMatrix = new RatingMatrix("src/data/training.arff", 943, 1682);
 //		System.out.println("*********");
 //		for (int i = 0; i < paraFc.length; i++) {
 //			System.out.println(Arrays.toString(paraFc[i]));
 //		}//of for i
 //		System.out.println("*********");
-        //Record which user selected into orfc.
-        boolean[] bl = new boolean[paraFc.length];
-
-        orFormalContext = new int[(int)(paraFc.length * 0.7)][paraFc[0].length];
-        newFormalContext = new int[paraFc.length - (int)(paraFc.length * 0.7)][paraFc[0].length];
-        orfc = new int[orFormalContext.length][orFormalContext[0].length];
-        nefc = new int[newFormalContext.length][newFormalContext[0].length];
+        orFormalContext = new int[(int) (paraFc.length * 0.9)][paraFc[0].length];
+        newFormalContext = new int[paraFc.length - (int) (paraFc.length * 0.9)][paraFc[0].length];
 
         //Generate a random array.
-        System.out.println("paraFc.length: " + paraFc.length);
         SimpleTools sim = new SimpleTools();
         random = sim.generateRandomArray(paraFc.length);
         //orFormalContext
         random1 = new int[orFormalContext.length];
         for (int i = 0; i < orFormalContext.length; i++) {
-            bl[i] = true;
             random1[i] = random[i];
         }//of for i
         //sort random1
         Arrays.sort(random1);
-//		for (int i = 0; i < orFormalContext.length; i++) {
-//			for (int j = 0; j < orFormalContext[0].length; j++) {
-//				orFormalContext[i][j] = paraFc[random1[i]][j];
-//				if (orFormalContext[i][j] != 0) {
-//					orfc[i][j] = true;
-//				} //of if
-//			}//of for j
-//		}
+        for (int i = 0; i < orFormalContext.length; i++) {
+            for (int j = 0; j < orFormalContext[0].length; j++) {
+                orFormalContext[i][j] = paraFc[random1[i]][j];
+            }//of for j
+        }//of for i
         //newFormalContext
         random2 = new int[newFormalContext.length];
         int count = 0;
-        for (int i = 0; i < paraFc.length; i++) {
-            if (!bl[i]) {
-                random2[count] = random[i];
-                count++;
-            }//of if
+        for (int i = orFormalContext.length; i < paraFc.length; i++) {
+            random2[count] = random[i];
+            count++;
         }//of for i
         //sort random2
         Arrays.sort(random2);
-//		for (int i = 0; i < newFormalContext.length; i++) {
-//		for (int j = 0; j < newFormalContext[0].length; j++) {
-//			newFormalContext[i][j] = paraFc[random2[i]][j];
-//			if (newFormalContext[i][j] != 0) {
-//				nefc[i][j] = true;
-//			} //of if
-//		} //of for j
-//		}
+        for (int i = 0; i < newFormalContext.length; i++) {
+            for (int j = 0; j < newFormalContext[0].length; j++) {
+                newFormalContext[i][j] = paraFc[random2[i]][j];
+            } //of for j
+        }//of for i
         //show
 //		System.out.println("random1 is: " + Arrays.toString(random1));
 //		for (int i = 0; i < orFormalContext.length; i++) {

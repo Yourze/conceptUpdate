@@ -690,7 +690,6 @@ public class RatingMatrix {
 
         // Step 3. Which items are available for deciding neighbors
         boolean[] tempItemAvailable = new boolean[tempItemSet.length];
-        System.out.println("tempItemSet.length: " + tempItemSet.length);
         // Step 4. Add an item rated by the user.
         tempItemAvailable[0] = true;
         // Step 5. Add item one by one until the number of users smaller than a

@@ -1,17 +1,12 @@
 package datamodel;
 
-import java.util.Arrays;
-
 public class Measures {
 
     /**
      * The first rating vector.
      */
     int[] firstRatingVector;
-    /**
-     * The first number.
-     */
-    int firstNumber;
+
     /**
      * The second rating vector.
      */
@@ -31,11 +26,10 @@ public class Measures {
         secondRatingVector = para2ndRatingVector;
     }// End constructor.
 
+    public Measures() {
 
-    public Measures(int para1stRatingNumber, int[] para2ndRatingVector) {
-        firstNumber = para1stRatingNumber;
-        secondRatingVector = para2ndRatingVector;
-    }//End constructor.
+    }
+
     /**************************************
      * Obtain the intersection of two sets.
      *
@@ -150,15 +144,12 @@ public class Measures {
      * @return
      **************************************
      */
-    double manhattanSimilarity() {
+    double manhattanSimilarity(int[] para1stVector, int[] para2ndVector) {
         // The bases of two rating vectors.
-        int tempFirstBase = 0;
-        int tempSecondBase = 0;
-        for (int i = 0; i < firstRatingVector.length; i++) {
-            tempFirstBase += Math.abs(firstRatingVector[i] - firstRatingVector[i]);
-            tempSecondBase += Math.abs(secondRatingVector[i] - secondRatingVector[i]);
+        double tempManhattanSim = 0;
+        for (int i = 0; i < para1stVector.length; i++) {
+            tempManhattanSim += Math.abs(para1stVector[i] - para2ndVector[i]);
         } // End for i
-        double tempManhattanSim = tempFirstBase + tempSecondBase;
         return tempManhattanSim;
     }// End function triangleSimilarity
 
@@ -168,15 +159,14 @@ public class Measures {
      * @return
      **************************************
      */
-    double euclideanSimilarity() {
+    double euclideanSimilarity(int[] para1stVector, int[] para2ndVector) {
         // The bases of two rating vectors.
-        int tempFirstBase = 0;
-        int tempSecondBase = 0;
-        for (int i = 0; i < firstRatingVector.length; i++) {
-            tempFirstBase += Math.abs(firstRatingVector[i] - firstRatingVector[i]) * Math.abs(firstRatingVector[i] - firstRatingVector[i]);
-            tempSecondBase += Math.abs(secondRatingVector[i] - secondRatingVector[i]) * Math.abs(secondRatingVector[i] - secondRatingVector[i]);
+        double tempEuclideanSim = 0;
+        double tempSum = 0;
+        for (int i = 0; i < para1stVector.length; i++) {
+            tempSum += Math.abs(para1stVector[i] - para2ndVector[i]) * Math.abs(para1stVector[i] - para2ndVector[i]);
         } // End for i
-        double tempEuclideanSim = Math.sqrt(tempFirstBase + tempSecondBase);
+        tempEuclideanSim = Math.sqrt(tempSum);
         return tempEuclideanSim;
     }// End function euclideanSimilarity
 
