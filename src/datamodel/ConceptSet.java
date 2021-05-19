@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import common.SimpleTools;
 import jxl.Cell;
 import jxl.Sheet;
@@ -84,7 +85,7 @@ public class ConceptSet {
      * User Sorted
      */
     int[] decendantFever;
-
+    int[] decendantFeverUC;
     /**
      * Represent
      */
@@ -130,7 +131,7 @@ public class ConceptSet {
         userOrientedConcepts = new Concept[numUsers];
         conceptsArray = new Concept[numUsers];
         conceptsArrayAfterFilter = new Concept[numUsers];
-        newConceptArray = new Concept[10000];
+        newConceptArray = new Concept[20000];
         similarityOfEachConcept = new double[numUsers];
         similarityOfEachUser = new double[numUsers];
         userConceptInclusionMatrix = new int[numUsers][USER_MAXIMAL_RELEVANT_CONCEPTS];
@@ -271,6 +272,55 @@ public class ConceptSet {
         return resultArray;
     }// Of computeDecendantFever
 
+    int[] getUserFever(int[][] paraFormalContext) {
+        int[] tempFever = new int[paraFormalContext.length];
+        for (int i = 0; i < paraFormalContext.length; i++) {
+            for (int j = 0; j < paraFormalContext[0].length; j++) {
+                if (paraFormalContext[i][j] == 1) {
+                    tempFever[i] ++;
+                }//Of if
+            }//Of for j
+        }//Of for i
+
+        return tempFever;
+    }//end getUserFever
+    /**
+     **************
+     * Sort the user according to the number of items they have rated in descendant
+     * order.
+     *
+     * @return the sorted indices.
+     **************
+     */
+    public int[] computeDecendantFever(int[][] paraFormalContext) {
+        // Step 1. Count the number of items for each user.
+        int[] tempFever = getUserFever(paraFormalContext);
+
+        // Step 2. Select the current least enthusiast
+        boolean[] tempSelected = new boolean[paraFormalContext.length];
+        int[] resultArray = new int[paraFormalContext.length];
+
+        int tempMaximal;
+        int tempUserIndex = -1;
+        for (int i = 0; i < paraFormalContext.length; i++) {
+            tempMaximal = 0;
+            for (int j = 0; j < paraFormalContext.length; j++) {
+                if (tempSelected[j]) {
+                    continue;
+                } // Of if
+
+                if (tempFever[j] >= tempMaximal) {
+                    tempMaximal = tempFever[j];
+                    tempUserIndex = j;
+                } // Of if
+            } // Of for j
+
+            resultArray[i] = tempUserIndex;
+            tempSelected[tempUserIndex] = true;
+        } // Of for i
+        return resultArray;
+    }// Of computeDecendantFever
+
     public boolean[] findUserHaveNoFilm() {
         boolean[] recordUser = new boolean[numUsers];
         Arrays.fill(recordUser, false);
@@ -326,9 +376,9 @@ public class ConceptSet {
         for (int i = 0; i < decendantFever.length; i++) {
 //			if (recordUser[decendantFever[i]]) {
             // Step 2.1 Is this user covered?
-            if (userConceptCounts[decendantFever[i]] > MIN_CONCEPTS_PER_USER) {
-                continue;
-            } // Of if
+//            if (userConceptCounts[decendantFever[i]] > MIN_CONCEPTS_PER_USER) {
+//                continue;
+//            } // Of if
             // Step 2.2 Construct a concept using this user.
 //			System.out.println("for user " + decendantFever[i] + ":");
             Concept tempNewConcept = ratingMatrix.computeRepresentativeOrientedConcept(decendantFever[i],
@@ -350,7 +400,7 @@ public class ConceptSet {
                 tempActualConcepts++;
             } // Of if
         } // Of for i
-//		System.out.println("There are " + tempActualConcepts + " concepts.");
+		System.out.println("There are " + tempActualConcepts + " concepts.");
 //		@SuppressWarnings("unused")
         int tempCount = 0;
         for (int i = 0; i < userConceptCounts.length; i++) {
@@ -368,8 +418,7 @@ public class ConceptSet {
      * @param paraUsersThreshold The threshold for common users.
      **************
      */
-    public int generateConceptSet(int paraUsersThreshold, int paraItemsThreshold, int[][] paraFormalContext,
-                                  int[] paraRandom) {
+    public int generateConceptSet(int paraUsersThreshold, int paraItemsThreshold, int[][] paraFormalContext, int[] paraRandom) {
         // Step 1. Generate concepts according to users.
         for (int i = 0; i < paraFormalContext.length; i++) {
             // Step 1.1 Construct a concept using this user.
@@ -378,12 +427,11 @@ public class ConceptSet {
             // Step 1.2 Check is the concept repeat?
             if (tempActualConceptsForUC == 0) {
                 conceptsArray[tempActualConceptsForUC] = tempNewConcept;
-//				System.out.println(Arrays.toString(tempNewConcept.users) + "," + Arrays.toString(tempNewConcept.items));
+				System.out.println(Arrays.toString(tempNewConcept.users) + "," + Arrays.toString(tempNewConcept.items));
                 tempActualConceptsForUC++;
             } else {
                 int count = 0;
                 for (int j = 0; j < tempActualConceptsForUC; j++) {
-
                     boolean isEqual = Arrays.equals(conceptsArray[j].users, tempNewConcept.users);
                     if (!isEqual) {
                         count++;
@@ -392,8 +440,7 @@ public class ConceptSet {
                     } // of if
                     if (count == tempActualConceptsForUC) {
                         conceptsArray[tempActualConceptsForUC] = tempNewConcept;
-//						System.out.println(
-//								Arrays.toString(tempNewConcept.users) + "," + Arrays.toString(tempNewConcept.items));
+						System.out.println(Arrays.toString(tempNewConcept.users) + "," + Arrays.toString(tempNewConcept.items));
                         tempActualConceptsForUC++;
                         break;
                     } // of if
@@ -403,7 +450,38 @@ public class ConceptSet {
 //		System.out.println("There are " + tempActualConcepts + "concepts");
         return tempActualConceptsForUC;
     }// Of generateDeConceptSet
-
+    /**
+     **************
+     * Generate the concept using the user fever in descending order.
+     *
+     * @param paraItemsThreshold The threshold for common items.
+     * @param paraUsersThreshold The threshold for common users.
+     **************
+     */
+    public int generateDeConceptSet(int paraUsersThreshold, int paraItemsThreshold, int[][] paraFormalContext, int[] random) {
+        // Step 1. Sort the users according to their fever.
+        decendantFeverUC = computeDecendantFever(paraFormalContext);
+        // System.out.println("decent: " + Arrays.toString(decendantFever));
+        // Step 2. Generate concepts according to users.
+        for (int i = 0; i < decendantFeverUC.length; i++) {
+//			if (recordUser[decendantFever[i]]) {
+            // Step 2.1 Is this user covered?
+//            if (userConceptCounts[decendantFeverUC[i]] > MIN_CONCEPTS_PER_USER) {
+//                continue;
+//            } // Of if
+            // Step 2.2 Construct a concept using this user.
+//			System.out.println("for user " + decendantFever[i] + ":");
+            Concept tempNewConcept = ratingMatrix.computeRepresentativeOrientedConcept(decendantFeverUC[i],
+                    paraItemsThreshold, random, paraFormalContext);
+            if (tempNewConcept.users.length > 1) {
+//                System.out.println(Arrays.toString(tempNewConcept.users) + Arrays.toString(tempNewConcept.items));
+                // Step 2.3 Record the concept.
+                conceptsArray[tempActualConceptsForUC] = tempNewConcept;
+                tempActualConceptsForUC++;
+            }//of if
+        }//of for i
+        return tempActualConcepts;
+    }//end generateDeConceptSet
     /**
      **************
      * Generate the concept using the user fever in descending order.
@@ -444,7 +522,7 @@ public class ConceptSet {
                         } // of if
                     } else {
                         continue;
-                    }
+                    }//of if
                 } else if (Arrays.equals(intension, conceptsArray[j].items)) {// b1&b2=b2,update c2,retain c1
                     // update c2
                     extension = dataProcessing.mergeArrays(conceptsArray[i].users, conceptsArray[j].users);
@@ -501,6 +579,7 @@ public class ConceptSet {
 //				}//of if
             } // of for j
         } // of for i
+        System.out.println("tempNunNewConcepts: " + tempNumNewConcept);
     }// of updateConceptSet
 
     /**
@@ -1042,7 +1121,7 @@ public class ConceptSet {
     public int[][] recommendation(double paraThreshold) {
         int[][] resultRecommendations = new int[numUsers][numItems];
         boolean[] tempRecommendations;
-
+        System.out.println("userConceptCounts：" + Arrays.toString(userConceptCounts));
         for (int i = 0; i < numUsers; i++) {
             for (int j = 0; j < userConceptCounts[i]; j++) {
                 tempRecommendations = ratingMatrix.userConceptBasedRecommendation(i,
@@ -1088,7 +1167,9 @@ public class ConceptSet {
         boolean[] tempRecommendations;
         getUserConceptsForUC();
 
+        System.out.println("numUserConcept: " + Arrays.toString(numUserConcept));
         for (int i = 0; i < numUsers; i++) {
+
             for (int j = 0; j < numUserConcept[i]; j++) {
                 tempRecommendations = ratingMatrix.userConceptBasedRecommendation(i,
                         conceptsArray[userInclusion[i][j]], paraThreshold);
@@ -1108,6 +1189,7 @@ public class ConceptSet {
         }//of for i
         return resultRecommendations;
     }//of recommendationForUC
+
     /**
      * Judge an array contain object user or not.
      * @param paraUser
@@ -1138,6 +1220,13 @@ public class ConceptSet {
      **************
      */
     public double[] validateRecommendation(int[][] paraTestMatrix, int[][] paraRecommendations) {
+        boolean[] isHave = new boolean[numUsers];
+        Arrays.fill(isHave, false);
+        for (int i = 0; i < numUserConcept.length; i++) {
+            if (numUserConcept[i] == 0) {
+                isHave[i] = true;
+            }//of if
+        }//of for i
         double tempRecommendation = 0;
         double tempCorrect = 0;
         double tempRated = 0;
@@ -1147,24 +1236,24 @@ public class ConceptSet {
         double tempFN = 0;
         double[] tempResult = new double[3];
         for (int i = 0; i < paraRecommendations.length; i++) {
-            // if (userConceptCountsOfCrossOver[i] != 0) {
-            for (int j = 0; j < paraRecommendations[0].length; j++) {
-                if ((paraRecommendations[i][j] == 0) && (paraTestMatrix[i][j]) == 0) {
-                    tempTN++;
-                } else if ((paraRecommendations[i][j] == 0) && (paraTestMatrix[i][j]) == 1) {
-                    tempFP++;
-                    tempRated++;
-                } else if ((paraRecommendations[i][j] > 0) && (paraTestMatrix[i][j]) == 0) {
-                    tempFN++;
-                    tempRecommendation++;
-                } else if ((paraRecommendations[i][j] > 0) && (paraTestMatrix[i][j]) == 1) {
-                    tempTP++;
-                    tempRecommendation++;
-                    tempRated++;
-                    tempCorrect++;
-                } // Of if
-            } // Of for j
-            // } // of if
+            if (!isHave[i]) {
+                for (int j = 0; j < paraRecommendations[0].length; j++) {
+                    if ((paraRecommendations[i][j] == 0) && (paraTestMatrix[i][j]) == 0) {
+                        tempTN++;
+                    } else if ((paraRecommendations[i][j] == 0) && (paraTestMatrix[i][j]) == 1) {
+                        tempFP++;
+                        tempRated++;
+                    } else if ((paraRecommendations[i][j] > 0) && (paraTestMatrix[i][j]) == 0) {
+                        tempFN++;
+                        tempRecommendation++;
+                    } else if ((paraRecommendations[i][j] > 0) && (paraTestMatrix[i][j]) == 1) {
+                        tempTP++;
+                        tempRecommendation++;
+                        tempRated++;
+                        tempCorrect++;
+                    } // Of if
+                } // Of for j
+            } // of if
         } // Of for i
         System.out.println("tempCorrect: " + tempCorrect);
         System.out.println("tempRecommendation: " + tempRecommendation);
@@ -1368,7 +1457,6 @@ public class ConceptSet {
      */
     public void updateByIncreaseUser() {
         // Generate concept by concept update.
-        DataProcessing dataProcessing = new DataProcessing();
         dataProcessing.divideTwoFC();
 
         int[] ran1 = dataProcessing.random1;
@@ -1377,11 +1465,11 @@ public class ConceptSet {
 
         int[][] nefc = dataProcessing.newFormalContext;
         System.out.println("%%%%%%%%%%%%%%%%%%%%");
-        generateConceptSet(2, 5, orfc, ran1);
+        generateDeConceptSet(2, 4, orfc, ran1);
 
         int orConcept = tempActualConceptsForUC;
         tempActualOrConcepts = orConcept;
-        generateConceptSet(2, 5, nefc, ran2);
+        generateDeConceptSet(2, 4, nefc, ran2);
 
         long startTime2 = System.currentTimeMillis();
         updateConceptSet(conceptsArray, orConcept, tempActualConceptsForUC - orConcept);
@@ -1738,13 +1826,13 @@ public class ConceptSet {
         ConceptSet tempSet = new ConceptSet(tempTrainRatingMatrix);
 
         //Generate concept by all data, record the runtime.
-        long startTime1 = System.currentTimeMillis();
-        tempSet.generateDeConceptSet(2, 5);
-        long endTime1 = System.currentTimeMillis();
-        System.out.println("Generate concept by all data took " + (endTime1 - startTime1) + "s");
-        int[][] tempRecommendation;
-        tempRecommendation = tempSet.recommendation(0.5);
-        tempSet.validateRecommendation(tempTestRatingMatrix.formalContext, tempRecommendation);
+//        long startTime1 = System.currentTimeMillis();
+//        tempSet.generateDeConceptSet(2, 4);
+//        long endTime1 = System.currentTimeMillis();
+//        System.out.println("Generate concept by all data took " + (endTime1 - startTime1) + "s");
+//        int[][] tempRecommendation;
+//        tempRecommendation = tempSet.recommendation(0.5);
+//        tempSet.validateRecommendation(tempTestRatingMatrix.formalContext, tempRecommendation);
 
         //Generate concept by concept update.
         tempSet.updateByIncreaseUser();
