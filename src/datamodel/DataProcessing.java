@@ -31,7 +31,7 @@ public class DataProcessing {
     int[] random;
     int[] random1;
     int[] random2;
-    RatingMatrix ratingMatrix;
+    RatingMatrix ratingMatrix = new RatingMatrix();
     SimpleTools simpleTools;
 
     /******************************************
@@ -621,7 +621,8 @@ public class DataProcessing {
      */
     public void divideTwoFC() {
         //paraFC is the original formal context.
-        int[][] paraFc = readFCFromArffFile("src/data/training.arff", 943, 1682);
+//        int[][] paraFc = readFCFromArffFile("src/data/training.arff", 943, 1682);
+        int[][] paraFc = ratingMatrix.readFile("src/data/200X420-1-train.txt");
 //        int[][] paraFc = readFCFromArrayFile("src/data/created.txt", 6, 5);
 //		RatingMatrix tempTrainRatingMatrix = new RatingMatrix("src/data/training.arff", 943, 1682);
 //		System.out.println("*********");

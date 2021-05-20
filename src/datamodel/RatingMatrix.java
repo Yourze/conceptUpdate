@@ -21,6 +21,9 @@ import datamodel.DataProcessing.*;
  * @author minfanphd 2018/11/27.
  */
 public class RatingMatrix {
+    public RatingMatrix() {
+
+    }
     /**
      * The sampling formal context.
      */
@@ -224,8 +227,8 @@ public class RatingMatrix {
      */
     public int[][] readFile(String paraFileURL) {
         File f1 = new File(paraFileURL);
-        String[][] rows = new String[24983][100];
-        int[][] tempDis = new int[24983][100];
+        String[][] rows = new String[4939][3];
+        int[][] tempDis = new int[4939][3];
         int index = 0;
         BufferedReader br = null;
         try {
@@ -233,10 +236,10 @@ public class RatingMatrix {
             String str = null;
             // 按行读取
             while ((str = br.readLine()) != null) {
-                String str1 = str.substring(1, str.length() - 1);
-                rows[index] = str1.split(", ");
+                String str1 = str.substring(0, str.length());
+                rows[index] = str1.split(" ");
 //				rows[index] = str.split("( )+");
-                for (int j = 0; j < 100; j++) {
+                for (int j = 0; j < 3; j++) {
                     tempDis[index][j] = Integer.parseInt(rows[index][j]);
                 }
                 // index标记行数,逐行读取和转换成int型
@@ -266,7 +269,7 @@ public class RatingMatrix {
 //		for (int i = 0; i < tempDis.length; i++) {
 //			System.out.println(Arrays.toString(tempDis[i]));
 //		}
-        return tempDis;
+        return tempMatrix;
     }//of readFile
 
     public int[][] readFCFromArrayFile(String paraFormalContextURL, int paraUsers, int paraItems) {
@@ -298,8 +301,8 @@ public class RatingMatrix {
     int[] obtainFCRowArray(String paraRow, int paraColumn) {
         int[] tempRow = new int[paraColumn];
 //		System.out.println("paraRow.lengh :" + paraRow.length());
-        String tempSubString = paraRow.substring(1, paraRow.length() - 1);
-        String[] tempAllElement = tempSubString.split(",");
+        String tempSubString = paraRow.substring(0, paraRow.length());
+        String[] tempAllElement = tempSubString.split(" ");
         for (int i = 0; i < tempAllElement.length; i++) {
             int tempElement = Integer.parseInt(tempAllElement[i]);
             tempRow[i] = tempElement;
@@ -316,7 +319,7 @@ public class RatingMatrix {
      */
     public RatingMatrix(int paraUsers, int paraItems, String paraTxtFilename) {
 //		int[][] tempArray = readFile(paraTxtFilename);
-        int[][] tempArray = readFCFromArrayFile(paraTxtFilename, paraUsers, paraItems);
+        int[][] tempArray = readFile(paraTxtFilename);
 //		for (int i = 0; i < tempArray.length; i++) {
 //			System.out.println(Arrays.toString(tempArray[i]));
 //		}
