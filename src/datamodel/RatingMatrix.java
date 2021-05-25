@@ -24,6 +24,7 @@ public class RatingMatrix {
     public RatingMatrix() {
 
     }
+//    boolean[] isHaveFilm;
     /**
      * The sampling formal context.
      */
@@ -227,8 +228,8 @@ public class RatingMatrix {
      */
     public int[][] readFile(String paraFileURL) {
         File f1 = new File(paraFileURL);
-        String[][] rows = new String[4939][3];
-        int[][] tempDis = new int[4939][3];
+        String[][] rows = new String[25714][3];
+        int[][] tempDis = new int[25714][3];
         int index = 0;
         BufferedReader br = null;
         try {
@@ -252,9 +253,23 @@ public class RatingMatrix {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        int[][] tempMatrix = new int[200][420];
-        for (int i = 0; i < tempDis.length; i++) {
-            tempMatrix[tempDis[i][0]][tempDis[i][1]] = tempDis[i][2];
+
+        int[][] tempRatingMatrix = new int[2000][1648];
+//        isHaveFilm = new boolean[tempRatingMatrix.length];
+//        System.out.println("tempDis.length: " + tempDis.length);
+        for (int i = 0; i < index; i++) {
+//            System.out.println("for " + i);
+//            System.out.println(Arrays.toString(tempDis[i]));
+            tempRatingMatrix[tempDis[i][0] - 1][tempDis[i][1] - 1] = tempDis[i][2];
+//            isHaveFilm[tempDis[i][0]] = true;
+        }//of for i
+        int[][] tempFormalContext = new int[2000][1648];
+        for (int i = 0; i < tempRatingMatrix.length; i++) {
+            for (int j = 0; j < tempRatingMatrix[0].length; j++) {
+                if (tempRatingMatrix[i][j] > 0) {
+                    tempFormalContext[i][j] = 1;
+                }
+            }//of for j
         }//of for i
 //		for (int i = 0; i < tempMatrix.length; i++) {
 //			for (int j = 0; j < tempMatrix[0].length; j++) {
@@ -269,7 +284,7 @@ public class RatingMatrix {
 //		for (int i = 0; i < tempDis.length; i++) {
 //			System.out.println(Arrays.toString(tempDis[i]));
 //		}
-        return tempMatrix;
+        return tempFormalContext;
     }//of readFile
 
     public int[][] readFCFromArrayFile(String paraFormalContextURL, int paraUsers, int paraItems) {
@@ -538,6 +553,7 @@ public class RatingMatrix {
      */
     Concept computeRepresentativeOrientedConcept(int paraRepresentative, int paraItemsThreshold) {
 //		System.out.println("representative: " + paraRepresentative);
+//        System.out.println(Arrays.toString(formalContext[paraRepresentative]));
         // Step 1. Initialize
         Concept resultConcept = null;
         int tempCounter = 0;
@@ -679,7 +695,9 @@ public class RatingMatrix {
                 tempCounter++;
             } // Of if
         } // Of for i
-
+//        System.out.println("for user " + paraRepresentative + ": ");
+//        System.out.println(Arrays.toString(paraFormalContext[paraRepresentative]));
+//        System.out.println("tempItemSet: " + Arrays.toString(tempItemSet));
         // Step 2. Statistics on each item rated by the representative.
         int[] tempCommonRates = new int[tempItemSet.length];
         for (int i = 0; i < paraFormalContext.length; i++) {
@@ -701,6 +719,7 @@ public class RatingMatrix {
                 tempMostPopular = i;
             } // Of if
         } // Of for i
+//        System.out.println("tempCommonRates: " + Arrays.toString(tempCommonRates));
 //		System.out.println("tempMostPopular is: " + tempMostPopular);
         tempItemAvailable[tempMostPopular] = true;
         int[] tempItemsFever = getItemFever();
@@ -1351,6 +1370,36 @@ public class RatingMatrix {
             }//Of for j
         }//Of for i
 
+        return tempFever;
+    }//Of getUserFever
+
+    /**
+     * *************
+     * Compute the number of items rated by each user.
+     * *************
+     */
+    public int getUserFever(int paraUser) {//方法getUserFever()返回一个int类型的数组
+        int tempFever = 0;
+        for (int i = 0; i < formalContext[0].length; i++) {
+            if (formalContext[paraUser][i] == 1) {
+                tempFever++;
+            }//Of if
+        }//Of for i
+        return tempFever;
+    }//Of getUserFever
+
+    /**
+     * *************
+     * Compute the number of items rated by each user.
+     * *************
+     */
+    public int getUserFever(int paraUser, int[][] paraFormalContext) {//方法getUserFever()返回一个int类型的数组
+        int tempFever = 0;
+        for (int i = 0; i < paraFormalContext[0].length; i++) {
+            if (paraFormalContext[paraUser][i] == 1) {
+                tempFever++;
+            }//Of if
+        }//Of for i
         return tempFever;
     }//Of getUserFever
 
