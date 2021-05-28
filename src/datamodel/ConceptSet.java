@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import common.SimpleTools;
 import jxl.Cell;
 import jxl.Sheet;
@@ -116,7 +115,7 @@ public class ConceptSet {
     /**
      * Only support relevant number of concepts for one user with this size.
      */
-    public static final int USER_MAXIMAL_RELEVANT_CONCEPTS = 1000;
+    public static final int USER_MAXIMAL_RELEVANT_CONCEPTS = 10000;
 
     /**
      * The first constructor
@@ -504,7 +503,7 @@ public class ConceptSet {
      * @param paraNewConcept The threshold for common users.
      **************
      */
-    public void updateConceptSet(Concept[] paraConceptsArray, int paraOrConcept, int paraNewConcept) {
+    public void updateConceptSet(int paraOrConcept, int paraNewConcept) {
         // for every concept in orConceptArray.
         for (int i = 0; i < paraOrConcept; i++) {
 //			int count = 0;
@@ -514,7 +513,15 @@ public class ConceptSet {
                 int[] intension = dataProcessing.intersection(conceptsArray[i].items, conceptsArray[j].items);
                 int[] extension = null;
                 if (intension.length == 0) {
-                    continue;
+                    if (isRepeat(conceptsArray[i])) {
+                        newConceptArray[tempNumNewConcept] = conceptsArray[i];
+                        tempNumNewConcept++;
+                    }//of if
+                    if (isRepeat(conceptsArray[j])) {
+                        newConceptArray[tempNumNewConcept] = conceptsArray[j];
+                        tempNumNewConcept++;
+                    }//of if
+//                    continue;
 //					count++;
                 } else if (Arrays.equals(intension, conceptsArray[i].items)) {// b1&b2=b1,update c1,retain c2
                     // update c1
@@ -1539,24 +1546,31 @@ public class ConceptSet {
      */
     public void updateByIncreaseUser() {
         // Generate concept by concept update.
-        dataProcessing.divideTwoFC();
-
+        dataProcessing.divideTwoFCRandom();
         int[] ran1 = dataProcessing.random1;
         int[] ran2 = dataProcessing.random2;
         int[][] orfc = dataProcessing.orFormalContext;
-
         int[][] nefc = dataProcessing.newFormalContext;
-        generateDeConceptSet(2, 4, orfc, ran1);
-
+        generateDeConceptSet(2, 2, orfc, ran1);
+        long startTime = System.currentTimeMillis();
         int orConcept = tempActualConceptsForUC;
         tempActualOrConcepts = orConcept;
-        generateDeConceptSet(2, 4, nefc, ran2);
+        generateDeConceptSet(2, 2, nefc, ran2);
+        updateConceptSet(orConcept, tempActualConceptsForUC - orConcept);
+        long endTime = System.currentTimeMillis();
+        System.out.println("Generate concept by concept update took " + (endTime - startTime) + "s");
 
-        long startTime2 = System.currentTimeMillis();
-        updateConceptSet(conceptsArray, orConcept, tempActualConceptsForUC - orConcept);
-        long endTime2 = System.currentTimeMillis();
-        System.out.println("Generate concept by concept update took " + (endTime2 - startTime2) + "s");
-
+//        dataProcessing.divideTwoFC("src/data/eachMovie-3k-CompressedTrain.txt");
+//        dataProcessing.divideTwoFC("src/data/training.arff");
+//        dataProcessing.divideTwoFC("src/data/200X420-5-train.txt");
+//        generateDeConceptSet(2, 2, dataProcessing.orFormalContext, dataProcessing.orUser);
+//        long startTime = System.currentTimeMillis();
+//        int numOrConcept = tempActualConceptsForUC;
+//        tempActualOrConcepts = numOrConcept;
+//        generateDeConceptSet(2, 2, dataProcessing.newFormalContext, dataProcessing.newUser);
+//        updateConceptSet(numOrConcept, tempActualConceptsForUC - numOrConcept);
+//        long endTime = System.currentTimeMillis();
+//        System.out.println("Generate concept by concept update took " + (endTime - startTime) + "s");
     }// of updateByIncreaseUser
 
     /**
@@ -1564,7 +1578,7 @@ public class ConceptSet {
      */
     public void updateByIncreaseUserKNN() {
         // Generate concept by concept update.
-        dataProcessing.divideTwoFC();
+        dataProcessing.divideTwoFCRandom();
 
         int[] ran1 = dataProcessing.random1;
         int[] ran2 = dataProcessing.random2;
@@ -1624,7 +1638,7 @@ public class ConceptSet {
     /**
      * Concept update by data change(0 -> 1)
      */
-    public void updateByDataChange () {
+    public void updateByDataChangeRandom () {
         //Step 1. Generate an array randomly(represent which user's data change)
         int[] random = simpleTools.generateRandomArray((int)(numUsers * 0.05));
         //Step 2. Change 0 to 1
@@ -1668,20 +1682,20 @@ public class ConceptSet {
 
         //generate concept
         long startTime1 = System.currentTimeMillis();
-        generateDeConceptSet(2, 5, orFC, ran1);
+        generateDeConceptSet(2, 2, orFC, ran1);
         int orConcept = tempActualConceptsForUC;
         tempActualOrConcepts = orConcept;
 
-        generateDeConceptSet(2, 5, newFC, random);
+        generateDeConceptSet(2, 2, newFC, random);
 
 //        long startTime1 = System.currentTimeMillis();
-        updateConceptSet(conceptsArray, orConcept, tempActualConceptsForUC - orConcept);
+        updateConceptSet(orConcept, tempActualConceptsForUC - orConcept);
         long endTime1 = System.currentTimeMillis();
         System.out.println("generate concepts by update use: " + (endTime1 - startTime1));
 
         //use all data
         long startTime2 = System.currentTimeMillis();
-        generateDeConceptSet(2, 5);
+        generateDeConceptSet(2, 2);
         long endTime2 = System.currentTimeMillis();
         System.out.println("generate concepts by all data use: " + (endTime2 - startTime2));
     }//of updateByDataChange
@@ -1872,7 +1886,7 @@ public class ConceptSet {
 //		System.out.println("Generate concept by all data took " + (endTime1 - startTime1) + "s");
         System.out.println("***");
         DataProcessing dataProcessing = new DataProcessing();
-        dataProcessing.divideTwoFC();
+        dataProcessing.divideTwoFCRandom();
 
         int[][] orformalcontext = dataProcessing.orFormalContext;
         int[] ran1 = dataProcessing.random1;
@@ -1890,7 +1904,7 @@ public class ConceptSet {
         System.out.println("***");
 //		long startTime2 = System.currentTimeMillis();
 //		System.out.println("tempActualConceptsForUC: " + tempSet.tempActualConceptsForUC + " orConcept: " + orConcept);
-        tempSet.updateConceptSet(tempSet.conceptsArray, orConcept, tempSet.tempActualConceptsForUC - orConcept);
+        tempSet.updateConceptSet(orConcept, tempSet.tempActualConceptsForUC - orConcept);
         System.out.println("tempActualConcept: " + tempSet.tempActualConcepts);
         System.out.println("tempActualConceptForUC: " + tempSet.tempActualConceptsForUC);
 //		long endTime2 = System.currentTimeMillis();
@@ -1904,26 +1918,29 @@ public class ConceptSet {
         // Read data file.
 //        RatingMatrix tempTrainRatingMatrix = new RatingMatrix("src/data/training.arff", 943, 1682);
 //        RatingMatrix tempTestRatingMatrix = new RatingMatrix("src/data/testing.arff", 943, 1682);
-        String tempTrainRatingMatrixURL = "src/data/eachMovie-2k-CompressedTrain0.3.txt";
-        String tempTestRatingMatrixURL = "src/data/eachMovie-2k-CompressedTest0.3.txt";
-        RatingMatrix tempTrainRatingMatrix = new RatingMatrix(2000, 1648, tempTrainRatingMatrixURL);
-        RatingMatrix tempTestRatingMatrix = new RatingMatrix(2000, 1648, tempTestRatingMatrixURL);
+//        String tempTrainRatingMatrixURL = "src/data/200X420-5-train.txt";
+//        String tempTestRatingMatrixURL = "src/data/200X420-5-test.txt";
+//        String tempTrainRatingMatrixURL = "src/data/eachMovie-3k-CompressedTrain.txt";
+//        String tempTestRatingMatrixURL = "src/data/eachMovie-3k-CompressedTest.txt";
+        String tempTrainRatingMatrixURL = "src/data/jester-sd1-300X100-train.txt";
+        String tempTestRatingMatrixURL = "src/data/eachMovie-3k-CompressedTest.txt";   RatingMatrix tempTrainRatingMatrix = new RatingMatrix(3000, 1648, tempTrainRatingMatrixURL);
+        RatingMatrix tempTestRatingMatrix = new RatingMatrix(300, 100, tempTestRatingMatrixURL);
         ConceptSet tempSet = new ConceptSet(tempTrainRatingMatrix);
 
         //Generate concept by all data, record the runtime.
         long startTime1 = System.currentTimeMillis();
-        tempSet.generateDeConceptSet(2, 4);
+        tempSet.generateDeConceptSet(2, 2);
         long endTime1 = System.currentTimeMillis();
         System.out.println("Generate concept by all data took " + (endTime1 - startTime1) + "s");
         int[][] tempRecommendation;
-        tempRecommendation = tempSet.recommendation(0.4);
+        tempRecommendation = tempSet.recommendation(0.5);
         tempSet.validateRecommendation(tempTestRatingMatrix.formalContext, tempRecommendation);
 
         //Generate concept by concept update.
         tempSet.updateByIncreaseUser();
 
         int[][] tempRecommendationForUC;
-        tempRecommendationForUC = tempSet.recommendationForUC(0.4);
+        tempRecommendationForUC = tempSet.recommendationForUC(0.5);
         tempSet.validateRecommendation(tempTestRatingMatrix.formalContext, tempRecommendationForUC);
     }// of test6
 
@@ -1934,8 +1951,8 @@ public class ConceptSet {
         // Read data file.
 //        RatingMatrix tempTrainRatingMatrix = new RatingMatrix("src/data/training.arff", 943, 1682);
 //        RatingMatrix tempTestRatingMatrix = new RatingMatrix("src/data/testing.arff", 943, 1682);
-        String tempTrainRatingMatrixURL = "src/data/200X420-4-train.txt";
-        String tempTestRatingMatrixURL = "src/data/200X420-4-test.txt";
+        String tempTrainRatingMatrixURL = "src/data/200X420-5-train.txt";
+        String tempTestRatingMatrixURL = "src/data/200X420-5-test.txt";
         RatingMatrix tempTrainRatingMatrix = new RatingMatrix(200, 420, tempTrainRatingMatrixURL);
         RatingMatrix tempTestRatingMatrix = new RatingMatrix(200, 420, tempTestRatingMatrixURL);
         ConceptSet tempSet = new ConceptSet(tempTrainRatingMatrix);
@@ -1947,7 +1964,7 @@ public class ConceptSet {
 
         //Generate concept by concept update.
 //		long startTime3 = System.currentTimeMillis();
-        tempSet.updateByDataChange();
+        tempSet.updateByDataChangeRandom();
 //		long endTime3 = System.currentTimeMillis();
 //		System.out.println("time3: " + (endTime3 - startTime3));
 
@@ -2016,8 +2033,8 @@ public class ConceptSet {
 //		trainAndTest3();
 //		trainAndTest4();
 //		test5();
-        test6();
-//        test7();
+//        test6();
+        test7();
 //        test8();
 //        test();
     }// Of main

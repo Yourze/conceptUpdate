@@ -1,20 +1,15 @@
 package datamodel;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import common.SimpleTools;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import weka.core.Instances;
+
+import java.io.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class DataProcessing {
 
@@ -31,6 +26,8 @@ public class DataProcessing {
     int[] random;
     int[] random1;
     int[] random2;
+    int[] orUser;
+    int[] newUser;
     RatingMatrix ratingMatrix = new RatingMatrix();
     SimpleTools simpleTools;
 
@@ -617,19 +614,14 @@ public class DataProcessing {
     }
 
     /**
-     * Divide formal context to two formal context
+     * Divide formal context to two formal context(Randomly)
      */
-    public void divideTwoFC() {
+    public void divideTwoFCRandom() {
         //paraFC is the original formal context.
 //        int[][] paraFc = readFCFromArffFile("src/data/training.arff", 943, 1682);
-        int[][] paraFc = ratingMatrix.readFile("src/data/eachMovie-2k-CompressedTrain0.3.txt");
+        int[][] paraFc = ratingMatrix.readFile("src/data/jester-sd1-300X100-train.txt");
 //        int[][] paraFc = readFCFromArrayFile("src/data/created.txt", 6, 5);
-//		RatingMatrix tempTrainRatingMatrix = new RatingMatrix("src/data/training.arff", 943, 1682);
-//		System.out.println("*********");
-//		for (int i = 0; i < paraFc.length; i++) {
-//			System.out.println(Arrays.toString(paraFc[i]));
-//		}//of for i
-//		System.out.println("*********");
+
         orFormalContext = new int[(int) (paraFc.length * 0.9)][paraFc[0].length];
         newFormalContext = new int[paraFc.length - (int) (paraFc.length * 0.9)][paraFc[0].length];
 
@@ -673,7 +665,52 @@ public class DataProcessing {
 //			System.out.println(Arrays.toString(newFormalContext[i]));
 //		}//of for i
 //		System.out.println("***************");
-    }//of devideTwoFC
+    }//of divideTwoFC
+
+    /**
+     * Divide formal context to two formal context
+     */
+    public void divideTwoFC(String paraFileURL) {
+//        int[][] paraFc = readFCFromArffFile(paraFileURL, 943, 1682);
+        int[][] paraFc = ratingMatrix.readFile(paraFileURL);
+        int[][] tempOrFormalContext = new int[paraFc.length][paraFc[0].length];
+        int[] tempOrUser = new int[tempOrFormalContext.length];
+        int count1 = 0;
+        int[][] tempNewFormalContext = new int[paraFc.length][paraFc[0].length];
+        int[] tempNewUser = new int[tempNewFormalContext.length];
+        int count2 = 0;
+
+        double paraRatio = 0.1;
+        int tempModel = 1000 / (int) (paraRatio * 1000);
+        int tempCount = 1;
+        for (int i = 0; i < paraFc.length; i++) {
+            tempCount++;
+            if (tempCount % tempModel == 1) {
+                tempNewUser[count2] = i;
+                tempNewFormalContext[count2] = paraFc[i];
+                count2++;
+            } else {
+                tempOrUser[count1] = i;
+                tempOrFormalContext[count1] = paraFc[i];
+                count1++;
+            }//of if
+        }//of for i
+        System.out.println("count1: " + count1);
+        System.out.println("count2: " + count2);
+        //Compress
+        orFormalContext = new int[count1][paraFc[0].length];
+        orUser = new int[count1];
+        newFormalContext = new int[count2][paraFc[0].length];
+        newUser = new int[count2];
+        for (int i = 0; i < count1; i++) {
+            orUser[i] = tempOrUser[i];
+            orFormalContext[i] = tempOrFormalContext[i];
+        }//of for i
+        for (int i = 0; i < count2; i++) {
+            newUser[i] = tempNewUser[i];
+            newFormalContext[i] = tempNewFormalContext[i];
+        }//of for i
+    }//End divideTwoFC
 
     /**
      * Get the intersection of two array.
@@ -737,7 +774,7 @@ public class DataProcessing {
 //    	d.dividTrainAndTest();
 //    	d.readFile("src/data/jester-sd1-300X100-test.txt");
         d.readFCFromArrayFile("src/data/created.txt", 6, 5);
-        d.divideTwoFC();
+        d.divideTwoFCRandom();
     }//of main
 
 }
