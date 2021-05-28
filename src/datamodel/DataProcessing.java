@@ -619,9 +619,9 @@ public class DataProcessing {
     public void divideTwoFCRandom() {
         //paraFC is the original formal context.
 //        int[][] paraFc = readFCFromArffFile("src/data/training.arff", 943, 1682);
-        int[][] paraFc = ratingMatrix.readFile("src/data/jester-sd1-300X100-train.txt");
+//        int[][] paraFc = ratingMatrix.readFile("src/data/200X420-3-train.txt");
 //        int[][] paraFc = readFCFromArrayFile("src/data/created.txt", 6, 5);
-
+        int[][] paraFc = ratingMatrix.readFile("src/data/eachMovie-2k-CompressedTrain0.3.txt");
         orFormalContext = new int[(int) (paraFc.length * 0.9)][paraFc[0].length];
         newFormalContext = new int[paraFc.length - (int) (paraFc.length * 0.9)][paraFc[0].length];
 

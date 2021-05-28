@@ -228,8 +228,8 @@ public class RatingMatrix {
      */
     public int[][] readFile(String paraFileURL) {
         File f1 = new File(paraFileURL);
-        String[][] rows = new String[4888][3];
-        int[][] tempDis = new int[4888][3];
+        String[][] rows = new String[25714][3];
+        int[][] tempDis = new int[25714][3];
         int index = 0;
         BufferedReader br = null;
         try {
@@ -254,16 +254,16 @@ public class RatingMatrix {
             ex.printStackTrace();
         }
 
-        int[][] tempRatingMatrix = new int[200][420];
+        int[][] tempRatingMatrix = new int[2000][1648];
 //        isHaveFilm = new boolean[tempRatingMatrix.length];
 //        System.out.println("tempDis.length: " + tempDis.length);
         for (int i = 0; i < index; i++) {
 //            System.out.println("for " + i);
 //            System.out.println(Arrays.toString(tempDis[i]));
-            tempRatingMatrix[tempDis[i][0]][tempDis[i][1]] = tempDis[i][2];
+            tempRatingMatrix[tempDis[i][0] - 1][tempDis[i][1] - 1] = tempDis[i][2];
 //            isHaveFilm[tempDis[i][0]] = true;
         }//of for i
-        int[][] tempFormalContext = new int[200][420];
+        int[][] tempFormalContext = new int[2000][1648];
         for (int i = 0; i < tempRatingMatrix.length; i++) {
             for (int j = 0; j < tempRatingMatrix[0].length; j++) {
                 if (tempRatingMatrix[i][j] > 0) {
