@@ -1645,7 +1645,7 @@ public class ConceptSet {
                 }//of if
             }//of for j
         }//of for i
-    }// of updateByIncreaseUser
+    }// of updateByIncreaseUserKNN
 
     /**
      * Change Data In Formal Context Fixed.
@@ -1791,6 +1791,110 @@ public class ConceptSet {
         long endTime2 = System.currentTimeMillis();
         System.out.println("generate concepts by all data use: " + (endTime2 - startTime2));
     }//of updateByDataChangeRandom
+
+
+    /**
+     * Concept update by data change(0 -> 1)(Random)
+     */
+    public void updateByDataChangeKNN () {
+        //1. Change data random
+        //Step 1. Generate an array randomly(represent which user's data change)
+//        int[] random = simpleTools.generateRandomArray((int)(numUsers * 0.05));
+//        //Step 2. Change 0 to 1
+//        double paraRatio = 0.1;
+//        int tempModel = 1000 / (int) (paraRatio * 1000);
+//        int temCount = 1;
+//        for (int i = 0; i < random.length; i++) {
+//            for (int j = 0; j < ratingMatrix.formalContext[0].length; j++) {
+//                if (ratingMatrix.formalContext[i][j] == 0) {
+//                    temCount++;
+//                    if (temCount % tempModel == 1) {
+//                        ratingMatrix.formalContext[i][j] = 1;
+//                    }//of if
+//                }//of if
+//            }//of for j
+//        }//of for i
+//        boolean[] temp = new boolean[ratingMatrix.formalContext.length];
+//        for (int i = 0; i < random.length; i++) {
+//            temp[random[i]] = true;
+//        }//of for i
+//        //Step 3. Use user that not change to generate concept.
+//        //ran1 represent the user not change data.
+//        int[] ran1 = new int[ratingMatrix.formalContext.length - random.length];
+//        int count = 0;
+//        for (int i = 0; i < temp.length; i++) {
+//            if (!temp[i]) {
+//                ran1[count] = i;
+//                count++;
+//            }//of if
+//        }//of for i
+//        int[][] orFC = new int[ratingMatrix.formalContext.length - random.length][ratingMatrix.formalContext[0].length];
+//        for (int i = 0; i < orFC.length; i++) {
+//            orFC[i] = ratingMatrix.formalContext[ran1[i]];
+//        } // of for i
+//        //Step 4. The user which change
+//        int[][] newFC = new int[random.length][ratingMatrix.formalContext[0].length];
+//        Arrays.sort(random);
+//        for (int i = 0; i < random.length; i++) {
+//            newFC[i] = ratingMatrix.formalContext[random[i]];
+//        }//of for i
+        changeDataInFormalContextFixed();
+        //generate concept
+        long startTime1 = System.currentTimeMillis();
+//        generateDeConceptSet(2, 2, orFC, ran1);
+        generateDeConceptSet(2, 2, orFormalContext, orUser);
+        int orConcept = tempActualConceptsForUC;
+        tempActualOrConcepts = orConcept;
+
+        double[] distanceWithConcepts = new double[orConcept];
+        for (int i = 0; i < newFormalContext.length; i++) {
+//        for (int i = 0; i < newFC.length; i++) {
+            int count1 = 0;
+            for (int j = 0; j < orConcept; j++) {
+                double tempDistanceSum = 0;
+                for (int k = 0; k < conceptsArray[j].users.length; k++) {
+//                    tempDistanceSum += measures.manhattanSimilarity(newFC[i], ratingMatrix.ratingMatrix[conceptsArray[j].users[k]]);
+                    tempDistanceSum += measures.manhattanSimilarity(newFormalContext[i], ratingMatrix.ratingMatrix[conceptsArray[j].users[k]]);
+                }//of for k
+                double tempDistance = tempDistanceSum / (conceptsArray[j].users.length);
+                distanceWithConcepts[count1] = tempDistance;
+                count1++;
+            }//of for j
+            //Find the top-k distance in distanceWithConcepts.
+            double[] tempSort = distanceWithConcepts;
+            Arrays.sort(tempSort);
+            int[] topK = new int[3];
+            for (int j = 0; j < distanceWithConcepts.length; j++) {
+                if (distanceWithConcepts[j] == tempSort[tempSort.length - 1]) {
+                    topK[0] = j;
+                }//of if
+                if (distanceWithConcepts[j] == tempSort[tempSort.length - 2]) {
+                    topK[1] = j;
+                }//of if
+                if (distanceWithConcepts[j] == tempSort[tempSort.length - 3]) {
+                    topK[2] = j;
+                }//of if
+            }//of for i
+            //Insert current user in concepts.
+            for (int j = 0; j < topK.length; j++) {
+                int[] tempUserSet = new int[conceptsArray[topK[j]].users.length + 1];
+                for (int k = 0; k < conceptsArray[topK[j]].users.length; k++) {
+                    tempUserSet[k] = conceptsArray[topK[j]].users[k];
+                }//of for k
+                tempUserSet[conceptsArray[topK[j]].users.length] = newUser[i];
+//                tempUserSet[conceptsArray[topK[j]].users.length] = random[i];
+                //update itemset
+                int[] tempItemSet = ratingMatrix.getSuperItems(tempUserSet);
+                int[] tempItem = dataProcessing.intersection(tempItemSet, conceptsArray[topK[j]].items);
+                //1.new intension is same as old/new intension belong to old
+                if (Arrays.equals(tempItemSet, conceptsArray[topK[j]].items) || tempItemSet.length > conceptsArray[topK[j]].items.length) {
+                    Concept tempNewConcept = new Concept(tempUserSet, tempItemSet);
+                    conceptsArray[topK[j]] = tempNewConcept;
+                    System.out.println("update");
+                }//of if
+            }//of for j
+        }//of for i
+    }//End updateByDataChangeKNN
 
     /**
      * filter
@@ -2074,7 +2178,7 @@ public class ConceptSet {
     }// of test7
 
     /**
-     * Test8
+     * Test8 Update by increase user with knn.
      */
     public static void test8() {
 //        String tempFormalContextURL = "src/data/created.txt";
@@ -2103,6 +2207,36 @@ public class ConceptSet {
         tempSet.validateRecommendation(tempTestRatingMatrix.formalContext, tempRecommendationForUC);
     }//of for test8
 
+    /**
+     * Test9 Update by change data with knn.
+     */
+    public static void test9() {
+//        String tempFormalContextURL = "src/data/created.txt";
+//        RatingMatrix tempTestFormalContext = new RatingMatrix(6, 5, tempFormalContextURL);
+//        RatingMatrix tempTrainRatingMatrix = new RatingMatrix("src/data/training.arff", 943, 1682);
+//        RatingMatrix tempTestRatingMatrix = new RatingMatrix("src/data/testing.arff", 943, 1682);
+        String tempTrainRatingMatrixURL = "src/data/200X420-1-train.txt";
+        String tempTestRatingMatrixURL = "src/data/200X420-1-test.txt";
+//        String tempTrainRatingMatrixURL = "src/data/eachMovie-3k-CompressedTrain.txt";
+//        String tempTestRatingMatrixURL = "src/data/eachMovie-3k-CompressedTest.txt";
+        RatingMatrix tempTrainRatingMatrix = new RatingMatrix(200, 420, tempTrainRatingMatrixURL);
+        RatingMatrix tempTestRatingMatrix = new RatingMatrix(200, 420, tempTestRatingMatrixURL);
+        ConceptSet tempSet = new ConceptSet(tempTrainRatingMatrix);
+//        tempSet.generateDeConceptSet(2, 2);
+//        int[][] tempRecommendation;
+//        tempRecommendation = tempSet.recommendation(0.4);
+//        tempSet.validateRecommendation(tempTestRatingMatrix.formalContext, tempRecommendation);
+
+        long startTime = System.currentTimeMillis();
+        tempSet.updateByDataChangeKNN();
+        long endTime = System.currentTimeMillis();
+        System.out.println("time: " + (endTime - startTime));
+        System.out.println("concept number: " + tempSet.tempActualConceptsForUC);
+        int[][] tempRecommendationForUC;
+        tempRecommendationForUC = tempSet.recommendationForUC(0.5);
+        tempSet.validateRecommendation(tempTestRatingMatrix.formalContext, tempRecommendationForUC);
+    }//of for test9
+
     public static void test() {
         String tempTrainRatingMatrixURL = "src/data/eachMovie-2k-CompressedTrain0.3.txt";
         String tempTestRatingMatrixURL = "src/data/eachMovie-2k-CompressedTest0.3.txt";
@@ -2130,7 +2264,9 @@ public class ConceptSet {
 //		test5();
 //        test6();
 //        test7();
-        test8();
+//        test8();
+        test9();
+//        test10();
 //        test();
     }// Of main
 }// Of ConceptSet
