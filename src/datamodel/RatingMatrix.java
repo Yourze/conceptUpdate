@@ -293,6 +293,7 @@ public class RatingMatrix {
             BufferedReader br = new BufferedReader(fr);
             String str1 = "";
             int tempI = 0;
+//            int[][] tempFC = new int[10000][paraItems];
             int[][] tempFormalContext = new int[paraUsers][paraItems];
             while (str1 != null) {
                 str1 = br.readLine();
@@ -305,6 +306,10 @@ public class RatingMatrix {
             } // Of while
             br.close();
             fr.close();
+//            System.out.println("tempI: " + tempI);
+//            for (int i = 0; i < tempI; i++) {
+//                tempFormalContext[i] = tempFC[i];
+//            }
             return tempFormalContext;
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -316,8 +321,8 @@ public class RatingMatrix {
     int[] obtainFCRowArray(String paraRow, int paraColumn) {
         int[] tempRow = new int[paraColumn];
 //		System.out.println("paraRow.lengh :" + paraRow.length());
-        String tempSubString = paraRow.substring(0, paraRow.length());
-        String[] tempAllElement = tempSubString.split(" ");
+        String tempSubString = paraRow.substring(1, paraRow.length() - 1);
+        String[] tempAllElement = tempSubString.split(", ");
         for (int i = 0; i < tempAllElement.length; i++) {
             int tempElement = Integer.parseInt(tempAllElement[i]);
             tempRow[i] = tempElement;
@@ -334,7 +339,8 @@ public class RatingMatrix {
      */
     public RatingMatrix(int paraUsers, int paraItems, String paraTxtFilename) {
 //		int[][] tempArray = readFile(paraTxtFilename);
-        int[][] tempArray = readFile(paraTxtFilename);
+//        int[][] tempArray = readFile(paraTxtFilename);
+        int[][] tempArray = readFCFromArrayFile(paraTxtFilename, paraUsers, paraItems);
 //		for (int i = 0; i < tempArray.length; i++) {
 //			System.out.println(Arrays.toString(tempArray[i]));
 //		}

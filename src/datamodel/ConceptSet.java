@@ -14,7 +14,6 @@ import jxl.Workbook;;
 
 /**
  * @author wzy
- *
  */
 public class ConceptSet {
 
@@ -28,7 +27,7 @@ public class ConceptSet {
     int[] numUserConcept;
     int[][] userInclusion;
     boolean[] recordWhichUserHaveNOFilm;
-    int[]orUser;
+    int[] orUser;
     int[] newUser;
     int[][] orFormalContext;
     int[][] newFormalContext;
@@ -80,7 +79,8 @@ public class ConceptSet {
      * How many concepts are relevant to this user.
      */
     int[] userConceptCounts;
-
+    int[] userConceptArea;
+    int[] userConceptAreaUC;
     /**
      * User Sorted
      */
@@ -141,6 +141,8 @@ public class ConceptSet {
         similarityOfEachUser = new double[numUsers];
         userConceptInclusionMatrix = new int[numUsers][USER_MAXIMAL_RELEVANT_CONCEPTS];
         userConceptCounts = new int[numUsers];
+        userConceptArea = new int[numUsers];
+        userConceptAreaUC = new int[numUsers];
         SimpleTools.matrixFill(userConceptInclusionMatrix, -1);
         information = new double[24983][100];
         informationAfterStan = new double[24983][100];
@@ -151,7 +153,7 @@ public class ConceptSet {
         numUserConcept = new int[numUsers];
         userInclusion = new int[numUsers][USER_MAXIMAL_RELEVANT_CONCEPTS];
         recordWhichUserHaveNOFilm = new boolean[numUsers];
-        Arrays.fill(recordWhichUserHaveNOFilm,true);
+        Arrays.fill(recordWhichUserHaveNOFilm, true);
     }// Of the first constructor
 
     /**
@@ -159,7 +161,6 @@ public class ConceptSet {
      *
      * @param
      * @return
-     *
      */
     public void readDataFromExcel() {
         // TODO Auto-generated method stub
@@ -207,7 +208,6 @@ public class ConceptSet {
      *
      * @param @return
      * @return
-     *
      */
     public double[][] standarlize() {
         double s2;
@@ -243,12 +243,12 @@ public class ConceptSet {
     }// of computeS2
 
     /**
-     **************
+     * *************
      * Sort the user according to the number of items they have rated in descendant
      * order.
      *
      * @return the sorted indices.
-     **************
+     * *************
      */
     public int[] computeDecendantFever() {
         // Step 1. Count the number of items for each user.
@@ -284,20 +284,21 @@ public class ConceptSet {
         for (int i = 0; i < paraFormalContext.length; i++) {
             for (int j = 0; j < paraFormalContext[0].length; j++) {
                 if (paraFormalContext[i][j] == 1) {
-                    tempFever[i] ++;
+                    tempFever[i]++;
                 }//Of if
             }//Of for j
         }//Of for i
 
         return tempFever;
     }//end getUserFever
+
     /**
-     **************
+     * *************
      * Sort the user according to the number of items they have rated in descendant
      * order.
      *
      * @return the sorted indices.
-     **************
+     * *************
      */
     public int[] computeDecendantFever(int[][] paraFormalContext) {
         // Step 1. Count the number of items for each user.
@@ -346,9 +347,9 @@ public class ConceptSet {
     }
 
     /**
-     **************
+     * *************
      * Generate all the concept for the formal context.
-     **************
+     * *************
      */
     public int generateConcept(int paraUsersThreshold, int paraItemsThreshold) {
         Concept resultConcept = null;
@@ -366,19 +367,18 @@ public class ConceptSet {
     }// of generateConcept
 
     /**
-     **************
+     * *************
      * Generate the concept using the user fever in descending order.
      *
      * @param paraItemsThreshold The threshold for common items.
      * @param paraUsersThreshold The threshold for common users.
-     **************
+     *                           *************
      */
     public int generateDeConceptSet(int paraUsersThreshold, int paraItemsThreshold) {
 //		boolean[] recordUser = new boolean[numUsers];
 //		recordUser = findUserHaveNoFilm();
         // Step 1. Sort the users according to their fever.
         decendantFever = computeDecendantFever();
-//        System.out.println("decent: " + Arrays.toString(decendantFever));
         // Step 2. Generate concepts according to users.
         for (int i = 0; i < decendantFever.length; i++) {
             if (ratingMatrix.getUserFever(decendantFever[i]) == 0) {
@@ -398,6 +398,7 @@ public class ConceptSet {
                     paraItemsThreshold);
             // Step 2.3 Record the concept.
             userOrientedConcepts[decendantFever[i]] = tempNewConcept;
+//            userConceptArea[decendantFever[i]] = tempNewConcept.users.length * tempNewConcept.items.length;
 //			System.out.println(Arrays.toString(tempNewConcept.users) + Arrays.toString(tempNewConcept.items));
             // Step 2.4 Update the user-concept relationships.
             int[] tempUsers = tempNewConcept.getUsers();
@@ -424,12 +425,12 @@ public class ConceptSet {
     }// Of generateDeConceptSet
 
     /**
-     **************
+     * *************
      * Generate the concept for concept update.
      *
      * @param paraItemsThreshold The threshold for common items.
      * @param paraUsersThreshold The threshold for common users.
-     **************
+     *                           *************
      */
     public int generateConceptSet(int paraUsersThreshold, int paraItemsThreshold, int[][] paraFormalContext, int[] paraRandom) {
         // Step 1. Generate concepts according to users.
@@ -463,18 +464,19 @@ public class ConceptSet {
 //		System.out.println("There are " + tempActualConcepts + "concepts");
         return tempActualConceptsForUC;
     }// Of generateDeConceptSet
+
     /**
-     **************
+     * *************
      * Generate the concept using the user fever in descending order.
      *
      * @param paraItemsThreshold The threshold for common items.
      * @param paraUsersThreshold The threshold for common users.
-     **************
+     *                           *************
      */
     public int generateDeConceptSet(int paraUsersThreshold, int paraItemsThreshold, int[][] paraFormalContext, int[] random) {
         // Step 1. Sort the users according to their fever.
         decendantFeverUC = computeDecendantFever(paraFormalContext);
-        Arrays.fill(recordWhichUserHaveNOFilm,true);
+        Arrays.fill(recordWhichUserHaveNOFilm, true);
         // System.out.println("decent: " + Arrays.toString(decendantFever));
         // Step 2. Generate concepts according to users.
         for (int i = 0; i < decendantFeverUC.length; i++) {
@@ -500,13 +502,14 @@ public class ConceptSet {
         }//of for i
         return tempActualConcepts;
     }//end generateDeConceptSet
+
     /**
-     **************
+     * *************
      * Generate the concept using the user fever in descending order.
      *
-     * @param paraOrConcept The threshold for common items.
+     * @param paraOrConcept  The threshold for common items.
      * @param paraNewConcept The threshold for common users.
-     **************
+     *                       *************
      */
     public void updateConceptSet(int paraOrConcept, int paraNewConcept) {
         // for every concept in orConceptArray.
@@ -609,7 +612,7 @@ public class ConceptSet {
     }// of updateConceptSet
 
     /**
-     * is concept repeat true means not repeat false means repeat
+     * is concept repeat ? true means not repeat , false means repeat
      */
     public boolean isRepeat(Concept paraConcept) {
         int count = 0;
@@ -758,10 +761,10 @@ public class ConceptSet {
     /**
      * Is the given user set include the given user?
      *
-     * @param paraUserSet
-     * @param paraUser
+     * @param paraUserSet paraUserSet
+     * @param paraUser    paraUser
      * @return The result.0 means not have,1 means have one,2 means the given user
-     *         is duplicate.
+     * is duplicate.
      */
     public int isHave(int[] paraUserSet, int paraUser) {
         int count = 0;
@@ -780,13 +783,13 @@ public class ConceptSet {
     }// of isHave
 
     /**
-     ********************
+     * *******************
      * Whether there are duplicate elements in the given user set?
      *
      * @param paraUserSet The given user set.
      * @param paraUser    The given user.
      * @return The result user set without duplicate.
-     ********************
+     * *******************
      */
     public int[] isSame(int[] paraUserSet, int paraUser) {
         List list = new ArrayList();
@@ -803,13 +806,13 @@ public class ConceptSet {
     }// of isSame
 
     /**
-     ********************
+     * *******************
      * Is the given two concepts same?
      *
      * @param paraConcept1 The first given concept.
      * @param paraConcept2 The second given concept.
      * @return The result.true means same,false means not same
-     ********************
+     * *******************
      */
     public static boolean isConceptSame(Concept paraConcept1, Concept paraConcept2) {
         if (paraConcept1.items.length != paraConcept2.items.length
@@ -1081,14 +1084,14 @@ public class ConceptSet {
 //	}// of GCGAv6
 
     /**
-     **************
+     * *************
      * Validate the recommendation while this rating matrix serves as the test set
      * Record the contribution of each concept
      *
      * @param paraRecommendations The recommendation in matrix, storing recommended
      *                            concept index above -1 indicates recommend, -1
      *                            indicates not recommend.
-     **************
+     *                            *************
      */
     public double[] validateRecommendationOfGCGA(boolean[][] paraTestMatrix, boolean[] paraRecordUsers,
                                                  int[][] paraRecommendations) {
@@ -1138,11 +1141,11 @@ public class ConceptSet {
     }// Of validateRecommendationOfGCGAv6
 
     /**
-     **************
+     * *************
      * Concept set based recommendation.
      *
      * @param paraThreshold The threshold for recommendation.
-     **************
+     *                      *************
      */
     public int[][] recommendation(double paraThreshold) {
         int[][] resultRecommendations = new int[numUsers][numItems];
@@ -1170,30 +1173,44 @@ public class ConceptSet {
         return resultRecommendations;
     }// Of recommendation
 
+//    /**
+//     * Get userConceptsForUC
+//     */
+//    public void getUserConceptsForUC() {
+//        for (int i = 0; i < numUsers; i++) {
+//            for (int j = 0; j < tempActualConceptsForUC; j++) {
+//                if (isContain(i, conceptsArray[j].users)) {
+//                    userInclusion[i][numUserConcept[i]] = j;
+//                    numUserConcept[i]++;
+//                }
+//            }//of for j
+//        }//of for i
+//    }//of getUserConceptForUC
+
     /**
      * Get userConceptsForUC
      */
-    public void getUserConceptsForUC () {
-        for (int i = 0; i < numUsers; i++) {
-            for (int j = 0; j < tempActualConceptsForUC; j++) {
-                if (isContain(i, conceptsArray[j].users)) {
-                    userInclusion[i][numUserConcept[i]] = j;
-                    numUserConcept[i] ++;
-                }
+    public void getUserConceptsForUC() {
+        for (int i = 0; i < tempNumNewConcept; i++) {
+            for (int j = 0; j < newConceptArray[i].users.length; j++) {
+                userInclusion[newConceptArray[i].users[j]][numUserConcept[newConceptArray[i].users[j]]] = i;
+                numUserConcept[newConceptArray[i].users[j]]++;
             }//of for j
         }//of for i
-//		System.out.println(Arrays.toString(numUserConcept));
     }//of getUserConceptForUC
 
     /**
      * recommendation for update concepts.
+     *
+     * @param paraThreshold
+     * @return
      */
     public int[][] recommendationForUC(double paraThreshold) {
         int[][] resultRecommendations = new int[numUsers][numItems];
         boolean[] tempRecommendations;
+        //get user-concept relation
         getUserConceptsForUC();
 
-//        System.out.println("numUserConcept: " + Arrays.toString(numUserConcept));
         for (int i = 0; i < numUsers; i++) {
             if (numUserConcept[i] == 0) {
                 for (int j = 0; j < userConceptCounts[i]; j++) {
@@ -1208,7 +1225,7 @@ public class ConceptSet {
             } else {
                 for (int j = 0; j < numUserConcept[i]; j++) {
                     tempRecommendations = ratingMatrix.userConceptBasedRecommendation(i,
-                            conceptsArray[userInclusion[i][j]], paraThreshold);
+                            newConceptArray[userInclusion[i][j]], paraThreshold);
                     for (int k = 0; k < numItems; k++) {
                         if (tempRecommendations[k]) {
                             resultRecommendations[i][k]++;
@@ -1229,11 +1246,12 @@ public class ConceptSet {
 
     /**
      * Judge an array contain object user or not.
+     *
      * @param paraUser
      * @param paraUserSet
      * @return
      */
-    public boolean isContain (int paraUser, int[] paraUserSet) {
+    public boolean isContain(int paraUser, int[] paraUserSet) {
         boolean f = false;
         for (int i = 0; i < paraUserSet.length; i++) {
             if (paraUserSet[i] == paraUser) {
@@ -1247,14 +1265,12 @@ public class ConceptSet {
     }//of isContain
 
     /**
-     * *************
      * Validate the recommendation while this rating matrix serves as the test set
      * Record the contribution of each concept
      *
-     * @param paraRecommendations The recommendation in matrix, storing recommended
-     *                            concept index above -1 indicates recommend, -1
-     *                            indicates not recommend.
-     *                            *************
+     * @param paraTestMatrix      The matrix to verify that the recommendation is correct or not.
+     * @param paraRecommendations The recommendation in matrix, storing recommended concept index above 1 indicates recommend, 0 indicates not recommend.
+     * @return
      */
     public double[] validateRecommendation(int[][] paraTestMatrix, int[][] paraRecommendations) {
 
@@ -1304,14 +1320,12 @@ public class ConceptSet {
     }// Of validateRecommendation
 
     /**
-     **************
      * Validate the recommendation while this rating matrix serves as the test set
      * Record the contribution of each concept
      *
-     * @param paraRecommendations The recommendation in matrix, storing recommended
-     *                            concept index above -1 indicates recommend, -1
-     *                            indicates not recommend.
-     **************
+     * @param paraTestMatrix      The matrix to verify that the recommendation is correct or not.
+     * @param paraRecommendations The recommendation in matrix, storing recommended concept index above 1 indicates recommend, 0 indicates not recommend.
+     * @return
      */
     public double[] validateRecommendationForUC(int[][] paraTestMatrix, int[][] paraRecommendations) {
         boolean[] isHave = new boolean[numUsers];
@@ -1367,14 +1381,12 @@ public class ConceptSet {
     }// Of validateRecommendation
 
     /**
-     **************
      * Validate the recommendation while this rating matrix serves as the test set
      * Record the contribution of each concept
      *
-     * @param paraRecommendations The recommendation in matrix, storing recommended
-     *                            concept index above -1 indicates recommend, -1
-     *                            indicates not recommend.
-     **************
+     * @param paraTestMatrix      The matrix to verify that the recommendation is correct or not.
+     * @param paraRecommendations The recommendation in matrix, storing recommended concept index above 1 indicates recommend, 0 indicates not recommend.
+     * @return
      */
     public double[] validateRecommendationForUser(int[][] paraTestMatrix, int[][] paraRecommendations) {
         double tempRecommendation = 0;
@@ -1437,19 +1449,17 @@ public class ConceptSet {
         tempResult[2] = (2 * tempResult[0] * tempResult[1]) / (tempResult[0] + tempResult[1]);
         tempResult[3] = tempSumF1 / paraRecommendations.length;
         System.out.println("Precision = " + tempResult[0] + " recall = " + tempResult[1] + " F1 = "
-                + tempResult[2] + " F1 = "+ tempResult[3]);
+                + tempResult[2] + " F1 = " + tempResult[3]);
         return tempResult;
     }//of validateRecommendationForUser
 
     /**
-     **************
      * Validate the recommendation while this rating matrix serves as the test set
      * Record the contribution of each concept
      *
-     * @param paraRecommendations The recommendation in matrix, storing recommended
-     *                            concept index above -1 indicates recommend, -1
-     *                            indicates not recommend.
-     **************
+     * @param paraTestMatrix      The matrix to verify that the recommendation is correct or not.
+     * @param paraRecommendations The recommendation in matrix, storing recommended concept index above 1 indicates recommend, 0 indicates not recommend.
+     * @return
      */
     public double[] validateRecommendationTest(boolean[][] paraTestMatrix, int[] paraRecommendations) {
         double tempRecommendation = 0;
@@ -1551,7 +1561,7 @@ public class ConceptSet {
      */
     public void updateByIncreaseUser() {
         // Generate concept by concept update.
-        dataProcessing.divideTwoFCRandom();
+        dataProcessing.divideTwoFCRandomByUser();
         int[] ran1 = dataProcessing.random1;
         int[] ran2 = dataProcessing.random2;
         int[][] orfc = dataProcessing.orFormalContext;
@@ -1583,7 +1593,7 @@ public class ConceptSet {
      */
     public void updateByIncreaseUserKNN() {
         // Generate concept by concept update.
-//        dataProcessing.divideTwoFCRandom();
+//        dataProcessing.divideTwoFCRandomByUser();
 //        int[] ran1 = dataProcessing.random1;
 //        int[] ran2 = dataProcessing.random2;
 //        int[][] orfc = dataProcessing.orFormalContext;
@@ -1648,9 +1658,41 @@ public class ConceptSet {
     }// of updateByIncreaseUserKNN
 
     /**
+     * Update by increase item
+     */
+    public void updateByIncreaseItem() {
+        // Generate concept by concept update.
+        dataProcessing.divideTwoFCRandomByItem();
+        int[] ran1 = dataProcessing.random1;
+        int[] ran2 = dataProcessing.random2;
+        int[][] orfc = dataProcessing.orFormalContext;
+        int[][] nefc = dataProcessing.newFormalContext;
+        generateDeConceptSet(2, 2, orfc, ran1);
+        long startTime = System.currentTimeMillis();
+        int orConcept = tempActualConceptsForUC;
+        tempActualOrConcepts = orConcept;
+        generateDeConceptSet(2, 2, nefc, ran2);
+        updateConceptSet(orConcept, tempActualConceptsForUC - orConcept);
+        long endTime = System.currentTimeMillis();
+        System.out.println("Generate concept by concept update took " + (endTime - startTime) + "s");
+
+//        dataProcessing.divideTwoFC("src/data/eachMovie-3k-CompressedTrain.txt");
+//        dataProcessing.divideTwoFC("src/data/training.arff");
+//        dataProcessing.divideTwoFC("src/data/200X420-5-train.txt");
+//        generateDeConceptSet(2, 2, dataProcessing.orFormalContext, dataProcessing.orUser);
+//        long startTime = System.currentTimeMillis();
+//        int numOrConcept = tempActualConceptsForUC;
+//        tempActualOrConcepts = numOrConcept;
+//        generateDeConceptSet(2, 2, dataProcessing.newFormalContext, dataProcessing.newUser);
+//        updateConceptSet(numOrConcept, tempActualConceptsForUC - numOrConcept);
+//        long endTime = System.currentTimeMillis();
+//        System.out.println("Generate concept by concept update took " + (endTime - startTime) + "s");
+    }// of updateByIncreaseItem
+
+    /**
      * Change Data In Formal Context Fixed.
      */
-    public void changeDataInFormalContextFixed () {
+    public void changeDataInFormalContextFixed() {
         int[] tempOrUser = new int[ratingMatrix.formalContext.length];
         int count1 = 0;
         int[] tempNewUser = new int[ratingMatrix.formalContext.length];
@@ -1704,7 +1746,7 @@ public class ConceptSet {
     /**
      * Concept update by data change(0 -> 1)(Fixed)
      */
-    public void updateByDataChangeFixed () {
+    public void updateByDataChangeFixed() {
         changeDataInFormalContextFixed();
         //Step 3. Use user that not change to generate concept.
         //generate concept
@@ -1730,9 +1772,9 @@ public class ConceptSet {
     /**
      * Concept update by data change(0 -> 1)(Random)
      */
-    public void updateByDataChangeRandom () {
+    public void updateByDataChangeRandom() {
         //Step 1. Generate an array randomly(represent which user's data change)
-        int[] random = simpleTools.generateRandomArray((int)(numUsers * 0.05));
+        int[] random = simpleTools.generateRandomArray((int) (numUsers * 0.05));
         //Step 2. Change 0 to 1
         double paraRatio = 0.1;
         int tempModel = 1000 / (int) (paraRatio * 1000);
@@ -1796,7 +1838,7 @@ public class ConceptSet {
     /**
      * Concept update by data change(0 -> 1)(Random)
      */
-    public void updateByDataChangeKNN () {
+    public void updateByDataChangeKNN() {
         //1. Change data random
         //Step 1. Generate an array randomly(represent which user's data change)
 //        int[] random = simpleTools.generateRandomArray((int)(numUsers * 0.05));
@@ -1909,11 +1951,36 @@ public class ConceptSet {
         } // of for i
     }// of filter
 
+
+    public void computeConceptArea() {
+
+        //Update
+        for (int i = 0; i < numUsers; i++) {
+            int maxArea = -1;
+            for (int j = 0; j < numUserConcept[i]; j++) {
+                int tempArea = newConceptArray[userInclusion[i][j]].users.length * newConceptArray[userInclusion[i][j]].items.length;
+                if (tempArea > maxArea) {
+                    maxArea = tempArea;
+                }//of if
+            }//of for j
+            userConceptAreaUC[i] = maxArea;
+
+            int mA = -1;
+            for (int j = 0; j < userConceptCounts[i]; j++) {
+                int tempArea = userOrientedConcepts[userConceptInclusionMatrix[i][j]].users.length * userOrientedConcepts[userConceptInclusionMatrix[i][j]].items.length;
+                if (tempArea > mA) {
+                    mA = tempArea;
+                }//of if
+            }//of for j
+            userConceptArea[i] = mA;
+        }//of for i
+    }//computeConceptArea
+
     /**
      * Train and test 1. Use ML-100k.
      *
-     * @param:
      * @return
+     * @param:
      */
     public static void trainAndTest1() {
         RatingMatrix tempTrainRatingMatrix = new RatingMatrix("src/data/training.arff", 943, 1682);
@@ -1938,8 +2005,8 @@ public class ConceptSet {
     /**
      * Train and test 2. use ML-100k-sd1.
      *
-     * @param:
      * @return
+     * @param:
      */
     public static void trainAndTest2() {
         String tempTrainFormalContextURL = "src/data/smalltest.txt";
@@ -1990,8 +2057,8 @@ public class ConceptSet {
     /**
      * Train and test 3. eachmovie
      *
-     * @param:
      * @return
+     * @param:
      */
     public static void trainAndTest3() {
         String tempTrainFormalContextURL = "src/data/jester-data-1-train.txt";
@@ -2029,8 +2096,8 @@ public class ConceptSet {
     /**
      * Train and test 4. ml-1m
      *
-     * @param:
      * @return
+     * @param:
      */
     public static void trainAndTest4() {
         String tempTrainFormalContextURL = "src/data/movielens1m-Train0.2.txt";
@@ -2082,7 +2149,7 @@ public class ConceptSet {
 //		System.out.println("Generate concept by all data took " + (endTime1 - startTime1) + "s");
         System.out.println("***");
         DataProcessing dataProcessing = new DataProcessing();
-        dataProcessing.divideTwoFCRandom();
+        dataProcessing.divideTwoFCRandomByUser();
 
         int[][] orformalcontext = dataProcessing.orFormalContext;
         int[] ran1 = dataProcessing.random1;
@@ -2118,9 +2185,10 @@ public class ConceptSet {
 //        String tempTestRatingMatrixURL = "src/data/200X420-5-test.txt";
 //        String tempTrainRatingMatrixURL = "src/data/eachMovie-3k-CompressedTrain.txt";
 //        String tempTestRatingMatrixURL = "src/data/eachMovie-3k-CompressedTest.txt";
-        String tempTrainRatingMatrixURL = "src/data/jester-sd1-300X100-train.txt";
-        String tempTestRatingMatrixURL = "src/data/eachMovie-3k-CompressedTest.txt";   RatingMatrix tempTrainRatingMatrix = new RatingMatrix(3000, 1648, tempTrainRatingMatrixURL);
-        RatingMatrix tempTestRatingMatrix = new RatingMatrix(300, 100, tempTestRatingMatrixURL);
+        String tempTrainRatingMatrixURL = "src/data/movielens1m-Train0.2.txt";
+        String tempTestRatingMatrixURL = "src/data/movielens1m-Train0.2.txt";
+        RatingMatrix tempTrainRatingMatrix = new RatingMatrix(6040, 3952, tempTrainRatingMatrixURL);
+        RatingMatrix tempTestRatingMatrix = new RatingMatrix(6040, 3952, tempTestRatingMatrixURL);
         ConceptSet tempSet = new ConceptSet(tempTrainRatingMatrix);
 
         //Generate concept by all data, record the runtime.
@@ -2128,16 +2196,27 @@ public class ConceptSet {
         tempSet.generateDeConceptSet(2, 2);
         long endTime1 = System.currentTimeMillis();
         System.out.println("Generate concept by all data took " + (endTime1 - startTime1) + "s");
-        int[][] tempRecommendation;
-        tempRecommendation = tempSet.recommendation(0.5);
-        tempSet.validateRecommendation(tempTestRatingMatrix.formalContext, tempRecommendation);
+//        System.out.println(Arrays.toString(tempSet.userOrientedConcepts[0].users) + Arrays.toString(tempSet.userOrientedConcepts[0].items));
+//        System.out.println(tempSet.userConceptCounts[0]);
+//        System.out.println(Arrays.toString(tempSet.userConceptArea));
+//        int[][] tempRecommendation;
+//        tempRecommendation = tempSet.recommendation(0.5);
+//        tempSet.validateRecommendation(tempTestRatingMatrix.formalContext, tempRecommendation);
 
         //Generate concept by concept update.
         tempSet.updateByIncreaseUser();
+        tempSet.getUserConceptsForUC();
+        tempSet.computeConceptArea();
+        System.out.println(Arrays.toString(tempSet.userConceptArea));
+        System.out.println(Arrays.toString(tempSet.userConceptAreaUC));
+//        for (int i = 0; i < tempSet.numUserConcept[0]; i++) {
+//            System.out.println(Arrays.toString(tempSet.userOrientedConcepts[tempSet.userConceptInclusionMatrix[0][i]].users) + Arrays.toString(tempSet.userOrientedConcepts[tempSet.userConceptInclusionMatrix[0][i]].items));
+//        }
+//        System.out.println(tempSet.numUserConcept[0]);
 
-        int[][] tempRecommendationForUC;
-        tempRecommendationForUC = tempSet.recommendationForUC(0.5);
-        tempSet.validateRecommendation(tempTestRatingMatrix.formalContext, tempRecommendationForUC);
+//        int[][] tempRecommendationForUC;
+//        tempRecommendationForUC = tempSet.recommendationForUC(0.5);
+//        tempSet.validateRecommendation(tempTestRatingMatrix.formalContext, tempRecommendationForUC);
     }// of test6
 
     /**
@@ -2244,17 +2323,14 @@ public class ConceptSet {
         RatingMatrix tempTestRatingMatrix = new RatingMatrix(2000, 1648, tempTestRatingMatrixURL);
 
         ConceptSet tempSet = new ConceptSet(tempTrainRatingMatrix);
-//        for (int i = 0; i < 2000; i++) {
-//            System.out.println(Arrays.toString(tempSet.ratingMatrix.formalContext[i]));
-//        }
-        tempSet.generateDeConceptSet(2,4);
+        tempSet.generateDeConceptSet(2, 4);
     }
+
     /**
-     **************
+     * *************
      * Test the class.
      *
-     * @throws FileNotFoundException
-     **************
+     * @throws FileNotFoundException *************
      */
     public static void main(String args[]) throws FileNotFoundException {
 //		trainAndTest1();
@@ -2262,10 +2338,10 @@ public class ConceptSet {
 //		trainAndTest3();
 //		trainAndTest4();
 //		test5();
-//        test6();
+        test6();
 //        test7();
 //        test8();
-        test9();
+//        test9();
 //        test10();
 //        test();
     }// Of main

@@ -13,10 +13,10 @@ import java.util.Set;
 
 public class DataProcessing {
 
-    String[][] tempRatingMatrix= new String[24983][100];
-    double[][] ratingMatrixs = new double[24983][100];
-    double[][] ratingMatrixStan = new double[24983][100];
-    int[][] ratingMatrixInt = new int[24983][100];
+    String[][] tempRatingMatrix;
+    double[][] ratingMatrixs;
+    double[][] ratingMatrixStan;
+    int[][] ratingMatrixInt;
     int[][] testingFormalContext;
     int[][] trainingFormalContext;
     int[][] orFormalContext;
@@ -28,9 +28,17 @@ public class DataProcessing {
     int[] random2;
     int[] orUser;
     int[] newUser;
-    RatingMatrix ratingMatrix = new RatingMatrix();
+    RatingMatrix ratingMatrix;
     SimpleTools simpleTools;
 
+    public DataProcessing() {
+        tempRatingMatrix = new String[24983][100];
+        ratingMatrixStan = new double[24983][100];
+        ratingMatrixInt = new int[24983][100];
+        ratingMatrixs = new double[24983][100];
+        ratingMatrix = new RatingMatrix();
+        simpleTools = new SimpleTools();
+    }
     /******************************************
      * Read the formal context from file.[1, 1, 1]
      ******************************************
@@ -72,7 +80,7 @@ public class DataProcessing {
         int[] tempRow = new int [paraColumn];
 //		System.out.println("paraRow.lengh :" + paraRow.length());
         String tempSubString = paraRow.substring(1,paraRow.length() - 1);
-        String[] tempAllElement = tempSubString.split(",");
+        String[] tempAllElement = tempSubString.split(", ");
         for (int i = 0; i < tempAllElement.length; i++) {
             int tempElement = Integer.parseInt(tempAllElement[i]);
             tempRow[i] = tempElement;
@@ -616,18 +624,18 @@ public class DataProcessing {
     /**
      * Divide formal context to two formal context(Randomly)
      */
-    public void divideTwoFCRandom() {
+    public void divideTwoFCRandomByUser() {
         //paraFC is the original formal context.
-//        int[][] paraFc = readFCFromArffFile("src/data/training.arff", 943, 1682);
+        int[][] paraFc = readFCFromArffFile("src/data/training.arff", 943, 1682);
 //        int[][] paraFc = ratingMatrix.readFile("src/data/200X420-3-train.txt");
-//        int[][] paraFc = readFCFromArrayFile("src/data/created.txt", 6, 5);
-        int[][] paraFc = ratingMatrix.readFile("src/data/eachMovie-2k-CompressedTrain0.3.txt");
+//        int[][] paraFc = readFCFromArrayFile("src/data/movielens1m-Train0.2.txt", 6040, 3952);
+//        int[][] paraFc = ratingMatrix.readFile("src/data/eachMovie-2k-CompressedTrain0.3.txt");
         orFormalContext = new int[(int) (paraFc.length * 0.9)][paraFc[0].length];
         newFormalContext = new int[paraFc.length - (int) (paraFc.length * 0.9)][paraFc[0].length];
 
         //Generate a random array.
-        SimpleTools sim = new SimpleTools();
-        random = sim.generateRandomArray(paraFc.length);
+
+        random = simpleTools.generateRandomArray(paraFc.length);
         //orFormalContext
         random1 = new int[orFormalContext.length];
         for (int i = 0; i < orFormalContext.length; i++) {
@@ -665,7 +673,60 @@ public class DataProcessing {
 //			System.out.println(Arrays.toString(newFormalContext[i]));
 //		}//of for i
 //		System.out.println("***************");
-    }//of divideTwoFC
+    }//of divideTwoFCByUser
+
+    /**
+     * Divide formal context to two formal context(Randomly)
+     */
+    public void divideTwoFCRandomByItem() {
+        //paraFC is the original formal context.
+        int[][] paraFc = readFCFromArffFile("src/data/training.arff", 943, 1682);
+//        int[][] paraFc = ratingMatrix.readFile("src/data/200X420-3-train.txt");
+//        int[][] paraFc = readFCFromArrayFile("src/data/movielens1m-Train0.2.txt", 6040, 3952);
+//        int[][] paraFc = ratingMatrix.readFile("src/data/eachMovie-2k-CompressedTrain0.3.txt");
+        orFormalContext = new int[paraFc.length][(int) (paraFc[0].length * 0.9)];
+        newFormalContext = new int[paraFc.length][paraFc[0].length - (int) (paraFc[0].length * 0.9)];
+
+        //Generate a random array.
+        random = simpleTools.generateRandomArray(paraFc[0].length);
+        //orFormalContext
+        random1 = new int[orFormalContext[0].length];
+        for (int i = 0; i < orFormalContext[0].length; i++) {
+            random1[i] = random[i];
+        }//of for i
+        //sort random1
+        Arrays.sort(random1);
+        for (int i = 0; i < orFormalContext.length; i++) {
+            for (int j = 0; j < orFormalContext[0].length; j++) {
+                orFormalContext[i][j] = paraFc[i][random1[j]];
+            }//of for j
+        }//of for i
+        //newFormalContext
+        random2 = new int[newFormalContext[0].length];
+        int count = 0;
+        for (int i = orFormalContext[0].length; i < paraFc[0].length; i++) {
+            random2[count] = random[i];
+            count++;
+        }//of for i
+        //sort random2
+        Arrays.sort(random2);
+        for (int i = 0; i < newFormalContext.length; i++) {
+            for (int j = 0; j < newFormalContext[0].length; j++) {
+                newFormalContext[i][j] = paraFc[i][random2[j]];
+            } //of for j
+        }//of for i
+        //show
+//		System.out.println("random1 is: " + Arrays.toString(random1));
+//		for (int i = 0; i < orFormalContext.length; i++) {
+//			System.out.println(Arrays.toString(orFormalContext[i]));
+//		}//of for i
+//		System.out.println("***************");
+//		System.out.println("random2 is: " + Arrays.toString(random2));
+//		for (int i = 0; i < newFormalContext.length; i++) {
+//			System.out.println(Arrays.toString(newFormalContext[i]));
+//		}//of for i
+//		System.out.println("***************");
+    }//of divideTwoFCByItem
 
     /**
      * Divide formal context to two formal context
@@ -774,7 +835,7 @@ public class DataProcessing {
 //    	d.dividTrainAndTest();
 //    	d.readFile("src/data/jester-sd1-300X100-test.txt");
         d.readFCFromArrayFile("src/data/created.txt", 6, 5);
-        d.divideTwoFCRandom();
+        d.divideTwoFCRandomByUser();
     }//of main
 
 }
